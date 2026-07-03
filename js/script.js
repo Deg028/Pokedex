@@ -1,17 +1,9 @@
 const searchBtn = document.getElementById("search-btn");
 const pokemonInput = document.getElementById("pokemon-input");
 const generationFilter = document.getElementById("generation-filter");
-const pokemonCard = document.getElementById("pokemon-card");
+const pokemonGrid = document.getElementById("pokemon-grid");
 const errorMessage = document.getElementById("error-message");
 const themeToggle = document.getElementById("theme-toggle");
-
-// Referencias a los elementos de la tarjeta
-const imgElement = document.getElementById("pokemon-img");
-const nameElement = document.getElementById("pokemon-name");
-const generationElement = document.getElementById("pokemon-generation");
-const typesElement = document.getElementById("pokemon-types");
-const heightElement = document.getElementById("pokemon-height");
-const weightElement = document.getElementById("pokemon-weight");
 
 // Diccionario de colores para los tipos de Pokémon
 const typeColors = {
@@ -35,31 +27,57 @@ const typeColors = {
   fairy: "#D685AD",
 };
 
+// Rangos de la Pokédex Nacional por generación [inicio, fin]
+const GEN_RANGES = {
+  "": [1, 1025],
+  1: [1, 151],
+  2: [152, 251],
+  3: [252, 386],
+  4: [387, 493],
+  5: [494, 649],
+  6: [650, 721],
+  7: [722, 809],
+  8: [810, 905],
+  9: [906, 1025],
+};
+
+const GRID_SIZE = 9; // Cuadrícula de 3x3
+
+// Caché de logos de tipos para evitar peticiones repetidas
+const typeLogoCache = new Map();
+
+// ---------- Eventos ----------
+
 searchBtn.addEventListener("click", () => {
   const query = pokemonInput.value.toLowerCase().trim();
   if (query) {
-    fetchPokemon(query);
+    searchPokemon(query);
+  } else {
+    loadGrid(generationFilter.dataset.value);
+  }
+});
+
+// Permitir búsqueda al presionar "Enter"
+pokemonInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    searchBtn.click();
   }
 });
 
 // Dropdown de generaciones (Bootstrap)
 document.querySelectorAll(".gen-option").forEach((option) => {
   option.addEventListener("click", () => {
-    // Guardar el valor seleccionado y actualizar el texto del botón
     generationFilter.dataset.value = option.dataset.value;
     generationFilter.textContent = option.textContent;
 
-    // Marcar visualmente la opción activa
     document
       .querySelectorAll(".gen-option")
       .forEach((el) => el.classList.remove("active"));
     option.classList.add("active");
 
-    // Relanzar la búsqueda si ya hay un término escrito
-    const query = pokemonInput.value.toLowerCase().trim();
-    if (query) {
-      fetchPokemon(query);
-    }
+    // Al cambiar de generación, recargar la cuadrícula
+    pokemonInput.value = "";
+    loadGrid(option.dataset.value);
   });
 });
 
@@ -78,101 +96,158 @@ themeToggle.addEventListener("click", () => {
   }
 });
 
-// Permitir búsqueda al presionar "Enter"
-pokemonInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    searchBtn.click();
-  }
-});
+// ---------- Carga de datos ----------
 
-async function fetchPokemon(query) {
+// Carga una cuadrícula de Pokémon según la generación seleccionada
+async function loadGrid(genValue) {
+  errorMessage.classList.add("hidden");
+  showSpinner();
+
+  const [start, end] = GEN_RANGES[genValue] || GEN_RANGES[""];
+  const ids = [];
+  for (let id = start; id < start + GRID_SIZE && id <= end; id++) {
+    ids.push(id);
+  }
+
+  try {
+    const results = await Promise.all(
+      ids.map((id) =>
+        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null)
+      )
+    );
+
+    pokemonGrid.innerHTML = "";
+    results.filter(Boolean).forEach(addCard);
+  } catch (error) {
+    pokemonGrid.innerHTML = "";
+    errorMessage.classList.remove("hidden");
+  }
+}
+
+// Busca un Pokémon concreto y lo muestra solo en la cuadrícula
+async function searchPokemon(query) {
+  errorMessage.classList.add("hidden");
+  showSpinner();
+
   try {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${query}`);
     if (!response.ok) throw new Error("Pokémon no encontrado");
 
     const data = await response.json();
 
-    // Obtener información de la especie para la generación
-    const speciesResponse = await fetch(data.species.url);
-    const speciesData = await speciesResponse.json();
-
-    // Si hay un filtro de generación, verificar que coincida
+    // Verificar que pertenezca a la generación seleccionada (si hay filtro)
     const selectedGen = generationFilter.dataset.value;
-    if (
-      selectedGen &&
-      speciesData.generation.name !== `generation-${selectedGen}`
-    ) {
-      throw new Error("Pokémon no encontrado en esa generación");
+    if (selectedGen) {
+      const [start, end] = GEN_RANGES[selectedGen];
+      if (data.id < start || data.id > end) {
+        throw new Error("No pertenece a esa generación");
+      }
     }
 
-    displayPokemon(data, speciesData);
+    pokemonGrid.innerHTML = "";
+    addCard(data);
   } catch (error) {
-    pokemonCard.classList.add("hidden");
+    pokemonGrid.innerHTML = "";
     errorMessage.classList.remove("hidden");
   }
 }
 
-function displayPokemon(data, speciesData) {
-  errorMessage.classList.add("hidden");
-  pokemonCard.classList.remove("hidden");
+// ---------- Render ----------
 
-  // Asignar imagen
-  imgElement.src =
+// Muestra un spinner de carga en la cuadrícula
+function showSpinner() {
+  pokemonGrid.innerHTML =
+    '<div class="col-12 text-center py-5">' +
+    '<div class="spinner-border text-danger" role="status">' +
+    '<span class="visually-hidden">Cargando...</span></div></div>';
+}
+
+// Crea y añade una card de Pokémon a la cuadrícula
+function addCard(data) {
+  const col = document.createElement("div");
+  col.className = "col";
+
+  const card = document.createElement("div");
+  card.className =
+    "card pokemon-card grid-card h-100 border-0 p-2 text-center";
+
+  // Número de la Pokédex
+  const id = document.createElement("span");
+  id.className = "poke-id d-block";
+  id.textContent = `#${String(data.id).padStart(3, "0")}`;
+  card.appendChild(id);
+
+  // Imagen
+  const imgWrap = document.createElement("div");
+  imgWrap.className =
+    "image-container-sm mx-auto rounded-circle d-flex align-items-center justify-content-center mb-2";
+  const img = document.createElement("img");
+  img.className = "img-fluid";
+  img.alt = data.name;
+  img.src =
     data.sprites.other["official-artwork"].front_default ||
     data.sprites.front_default;
+  imgWrap.appendChild(img);
+  card.appendChild(imgWrap);
 
-  // Asignar nombre
-  nameElement.textContent = data.name;
+  // Nombre
+  const name = document.createElement("h3");
+  name.className = "poke-name text-capitalize mb-2";
+  name.textContent = data.name;
+  card.appendChild(name);
 
-  // Asignar generación
-  const genName = speciesData.generation.name
-    .replace("generation-", "")
-    .toUpperCase();
-  generationElement.textContent = `Generación: ${genName}`;
-
-  // Asignar altura y peso
-  heightElement.textContent = (data.height / 10).toFixed(1);
-  weightElement.textContent = (data.weight / 10).toFixed(1);
-
-  // Limpiar tipos anteriores y crear los nuevos
-  typesElement.innerHTML = "";
+  // Tipos
+  const types = document.createElement("div");
+  types.className = "d-flex flex-wrap justify-content-center gap-1";
   data.types.forEach((typeInfo) => {
     const typeName = typeInfo.type.name;
 
-    // Badge de color con texto (respaldo y estado inicial)
-    const span = document.createElement("span");
-    span.textContent = typeName;
-    span.className = "type-badge";
-    span.style.backgroundColor = typeColors[typeName] || "#777";
-    typesElement.appendChild(span);
+    const badge = document.createElement("span");
+    badge.className = "type-badge";
+    badge.textContent = typeName;
+    badge.style.backgroundColor = typeColors[typeName] || "#777";
+    types.appendChild(badge);
 
-    // Buscar el logo oficial del tipo en la PokeAPI y reemplazar el texto
-    fetchTypeLogo(typeInfo.type.url, typeName, span);
+    // Reemplazar por el logo oficial del tipo (con caché)
+    getTypeLogo(typeInfo.type).then((logoUrl) => {
+      if (!logoUrl) return;
+      const logo = document.createElement("img");
+      logo.src = logoUrl;
+      logo.alt = typeName;
+      logo.className = "type-logo";
+      badge.replaceWith(logo);
+    });
   });
+  card.appendChild(types);
+
+  col.appendChild(card);
+  pokemonGrid.appendChild(col);
 }
 
-// Consulta el endpoint /type/{name} para obtener el sprite del tipo
-async function fetchTypeLogo(typeUrl, typeName, span) {
-  try {
-    const response = await fetch(typeUrl);
-    if (!response.ok) return;
-
-    const typeData = await response.json();
-    const sprites = typeData.sprites || {};
-
-    // Logos por generación (el de Sword/Shield es el más completo)
-    const logoUrl =
-      sprites["generation-viii"]?.["sword-shield"]?.name_icon ||
-      sprites["generation-ix"]?.["scarlet-violet"]?.name_icon;
-
-    if (!logoUrl) return;
-
-    const img = document.createElement("img");
-    img.src = logoUrl;
-    img.alt = typeName;
-    img.className = "type-logo";
-    span.replaceWith(img); // Sustituye el badge de texto por el logo oficial
-  } catch (error) {
-    // Si falla la carga, se conserva el badge de color con texto
+// Obtiene el logo oficial de un tipo desde la PokeAPI (cacheado)
+function getTypeLogo(type) {
+  if (typeLogoCache.has(type.name)) {
+    return typeLogoCache.get(type.name);
   }
+
+  const promise = fetch(type.url)
+    .then((res) => (res.ok ? res.json() : null))
+    .then((typeData) => {
+      if (!typeData) return null;
+      const sprites = typeData.sprites || {};
+      return (
+        sprites["generation-viii"]?.["sword-shield"]?.name_icon ||
+        sprites["generation-ix"]?.["scarlet-violet"]?.name_icon ||
+        null
+      );
+    })
+    .catch(() => null);
+
+  typeLogoCache.set(type.name, promise);
+  return promise;
 }
+
+// ---------- Inicio ----------
+loadGrid("");

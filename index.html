@@ -1,103 +1,208 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pokédex Web</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
     <div class="background-pokemon" aria-hidden="true"></div>
     <div class="background-pokemon-left" aria-hidden="true"></div>
 
-    <button id="theme-toggle" class="btn theme-toggle d-flex align-items-center gap-2 position-absolute top-0 end-0 m-3" type="button" aria-label="Cambiar tema">
-        <span class="theme-icon" aria-hidden="true">
-            <img src="sprites/Charmander.png" alt="">
-        </span>
-        <span class="theme-label small">Modo oscuro</span>
+    <button
+      id="theme-toggle"
+      class="btn theme-toggle d-flex align-items-center gap-2 position-absolute top-0 end-0 m-3"
+      type="button"
+      aria-label="Cambiar tema"
+    >
+      <span class="theme-icon" aria-hidden="true">
+        <img src="sprites/Charmander.png" alt="" />
+      </span>
+      <span class="theme-label small">Modo oscuro</span>
     </button>
 
-    <main class="container-fluid min-vh-100 d-flex justify-content-center align-items-center position-relative z-1 py-5">
-
-        <!-- Buscador estilo Pokédex (esquina superior izquierda) -->
-        <div class="pokedex-device pokedex-search shadow-lg">
-
+    <main class="container-fluid min-vh-100 position-relative z-1 py-4">
+      <div class="row g-4 justify-content-center">
+        <!-- Buscador estilo Pokédex (columna izquierda) -->
+        <div class="col-12 col-lg-4 col-xl-3">
+          <div class="pokedex-device pokedex-search shadow-lg sticky-lg-top">
             <!-- Panel superior decorativo estilo Pokédex -->
             <div class="pokedex-top">
-                <div class="pokedex-lens" aria-hidden="true"></div>
-                <div class="pokedex-lights" aria-hidden="true">
-                    <span class="light light-red"></span>
-                    <span class="light light-yellow"></span>
-                    <span class="light light-green"></span>
-                </div>
+              <div class="pokedex-lens" aria-hidden="true"></div>
+              <div class="pokedex-lights" aria-hidden="true">
+                <span class="light light-red"></span>
+                <span class="light light-yellow"></span>
+                <span class="light light-green"></span>
+              </div>
             </div>
 
             <!-- Pantalla de la Pokédex -->
             <div class="pokedex-screen text-center">
-                <h1 class="pokedex-title mb-4 h3">Pokédex</h1>
+              <h1 class="pokedex-title mb-4 h3">Pokédex</h1>
 
-                <div class="row g-2 mb-2">
-                    <div class="col-12">
-                        <div class="input-group">
-                            <span class="input-group-text" aria-hidden="true">🔍</span>
-                            <input type="text" id="pokemon-input" class="form-control text-center" placeholder="Busca por nombre o número...">
-                        </div>
-                    </div>
-                    <div class="col-7">
-                        <div class="dropdown">
-                            <button id="generation-filter" type="button" class="btn btn-light dropdown-toggle w-100" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" data-value="">
-                                Todas las gens
-                            </button>
-                            <ul class="dropdown-menu w-100 text-center" aria-labelledby="generation-filter">
-                                <li><button type="button" class="dropdown-item gen-option active" data-value="">Todas las gens</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="1">Gen I</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="2">Gen II</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="3">Gen III</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="4">Gen IV</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="5">Gen V</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="6">Gen VI</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="7">Gen VII</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="8">Gen VIII</button></li>
-                                <li><button type="button" class="dropdown-item gen-option" data-value="9">Gen IX</button></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <button id="search-btn" type="button" class="btn btn-danger w-100 fw-bold">Buscar</button>
-                    </div>
+              <div class="row g-2 mb-2">
+                <div class="col-12">
+                  <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">🔍</span>
+                    <input
+                      type="text"
+                      id="pokemon-input"
+                      class="form-control text-center"
+                      placeholder="Busca por nombre o número..."
+                    />
+                  </div>
                 </div>
+                <div class="col-7">
+                  <div class="dropdown">
+                    <button
+                      id="generation-filter"
+                      type="button"
+                      class="btn btn-light dropdown-toggle w-100"
+                      data-bs-toggle="dropdown"
+                      data-bs-display="static"
+                      aria-expanded="false"
+                      data-value=""
+                    >
+                      Todas las gens
+                    </button>
+                    <ul
+                      class="dropdown-menu w-100 text-center"
+                      aria-labelledby="generation-filter"
+                    >
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option active"
+                          data-value=""
+                        >
+                          Todas las gens
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="1"
+                        >
+                          Gen I
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="2"
+                        >
+                          Gen II
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="3"
+                        >
+                          Gen III
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="4"
+                        >
+                          Gen IV
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="5"
+                        >
+                          Gen V
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="6"
+                        >
+                          Gen VI
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="7"
+                        >
+                          Gen VII
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="8"
+                        >
+                          Gen VIII
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="dropdown-item gen-option"
+                          data-value="9"
+                        >
+                          Gen IX
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-5">
+                  <button
+                    id="search-btn"
+                    type="button"
+                    class="btn btn-danger w-100 fw-bold"
+                  >
+                    Buscar
+                  </button>
+                </div>
+              </div>
 
-                <p id="error-message" class="text-danger fw-bold mt-3 small hidden">Pokémon no encontrado o no pertenece a la generación.</p>
+              <p
+                id="error-message"
+                class="text-danger fw-bold mt-3 small hidden"
+              >
+                Pokémon no encontrado o no pertenece a la generación.
+              </p>
             </div>
+          </div>
         </div>
 
-        <!-- Tarjeta del Pokémon encontrado (centrada) -->
-        <div id="pokemon-card" class="card pokemon-card result-card border-0 p-4 shadow-lg text-center hidden">
-            <div class="image-container mx-auto rounded-circle d-flex align-items-center justify-content-center shadow-sm mb-3">
-                <img id="pokemon-img" class="img-fluid" src="" alt="Pokémon">
-            </div>
-
-            <h2 id="pokemon-name" class="text-capitalize h4 my-2"></h2>
-            <p id="pokemon-generation" class="small text-muted mb-3"></p>
-
-            <div id="pokemon-types" class="d-flex justify-content-center gap-2 mb-3"></div>
-
-            <div class="row g-0 stats-container rounded p-2 bg-white shadow-sm text-secondary small">
-                <div class="col-6 border-end">
-                    <p class="m-0"><strong>Altura</strong></p>
-                    <p class="m-0"><span id="pokemon-height"></span> m</p>
-                </div>
-                <div class="col-6">
-                    <p class="m-0"><strong>Peso</strong></p>
-                    <p class="m-0"><span id="pokemon-weight"></span> kg</p>
-                </div>
-            </div>
+        <!-- Cuadrícula de Pokémon (2x2, centrada) -->
+        <div class="col-12 col-lg-8 col-xl-9 d-flex justify-content-center">
+          <div
+            id="pokemon-grid"
+            class="row row-cols-2 row-cols-md-2 g-3 justify-content-center"
+          ></div>
         </div>
+      </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/script.js"></script>
-</body>
+  </body>
 </html>
