@@ -137,6 +137,31 @@ body {
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
 }
 
+/* Icono del buscador */
+.input-group-text {
+  background: #e3350d;
+  color: #ffffff;
+  border: none;
+}
+
+/* Menú de generaciones (dropdown de Bootstrap) */
+.dropdown-menu {
+  max-height: 240px;
+  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+.gen-option {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.gen-option:hover {
+  transform: translateX(3px);
+}
+.gen-option.active {
+  background-color: #e3350d;
+  color: #ffffff;
+}
+
 .pokemon-card {
   background-color: #f8f9fa;
   border-radius: 15px;
@@ -221,6 +246,27 @@ body.dark select {
   background-color: #232338;
   border-color: #3f3f5a;
   color: #ffffff;
+}
+
+/* Dropdown de generaciones en modo oscuro */
+body.dark #generation-filter {
+  background-color: #232338;
+  border-color: #3f3f5a;
+  color: #ffffff;
+}
+body.dark .dropdown-menu {
+  background-color: #232338;
+  border-color: #3f3f5a;
+}
+body.dark .gen-option {
+  color: #f3f4f6;
+}
+body.dark .gen-option:hover {
+  background-color: #2f2f4a;
+  color: #ffffff;
+}
+body.dark .gen-option.active {
+  background-color: #e3350d;
 }
 
 body.dark input::placeholder {

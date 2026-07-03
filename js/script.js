@@ -42,11 +42,25 @@ searchBtn.addEventListener("click", () => {
   }
 });
 
-generationFilter.addEventListener("change", () => {
-  const query = pokemonInput.value.toLowerCase().trim();
-  if (query) {
-    fetchPokemon(query);
-  }
+// Dropdown de generaciones (Bootstrap)
+document.querySelectorAll(".gen-option").forEach((option) => {
+  option.addEventListener("click", () => {
+    // Guardar el valor seleccionado y actualizar el texto del botón
+    generationFilter.dataset.value = option.dataset.value;
+    generationFilter.textContent = option.textContent;
+
+    // Marcar visualmente la opción activa
+    document
+      .querySelectorAll(".gen-option")
+      .forEach((el) => el.classList.remove("active"));
+    option.classList.add("active");
+
+    // Relanzar la búsqueda si ya hay un término escrito
+    const query = pokemonInput.value.toLowerCase().trim();
+    if (query) {
+      fetchPokemon(query);
+    }
+  });
 });
 
 themeToggle.addEventListener("click", () => {
@@ -83,7 +97,7 @@ async function fetchPokemon(query) {
     const speciesData = await speciesResponse.json();
 
     // Si hay un filtro de generación, verificar que coincida
-    const selectedGen = generationFilter.value;
+    const selectedGen = generationFilter.dataset.value;
     if (
       selectedGen &&
       speciesData.generation.name !== `generation-${selectedGen}`

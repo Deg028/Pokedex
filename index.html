@@ -39,21 +39,29 @@
 
                 <div class="row g-2 mb-4">
                     <div class="col-12">
-                        <input type="text" id="pokemon-input" class="form-control text-center" placeholder="Busca por nombre o número...">
+                        <div class="input-group">
+                            <span class="input-group-text" aria-hidden="true">🔍</span>
+                            <input type="text" id="pokemon-input" class="form-control text-center" placeholder="Busca por nombre o número...">
+                        </div>
                     </div>
                     <div class="col-7">
-                        <select id="generation-filter" class="form-select text-center" aria-label="Filtrar por generación">
-                            <option value="">Todas las gens</option>
-                            <option value="1">Gen I</option>
-                            <option value="2">Gen II</option>
-                            <option value="3">Gen III</option>
-                            <option value="4">Gen IV</option>
-                            <option value="5">Gen V</option>
-                            <option value="6">Gen VI</option>
-                            <option value="7">Gen VII</option>
-                            <option value="8">Gen VIII</option>
-                            <option value="9">Gen IX</option>
-                        </select>
+                        <div class="dropdown">
+                            <button id="generation-filter" type="button" class="btn btn-light dropdown-toggle w-100" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" data-value="">
+                                Todas las gens
+                            </button>
+                            <ul class="dropdown-menu w-100 text-center" aria-labelledby="generation-filter">
+                                <li><button type="button" class="dropdown-item gen-option active" data-value="">Todas las gens</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="1">Gen I</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="2">Gen II</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="3">Gen III</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="4">Gen IV</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="5">Gen V</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="6">Gen VI</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="7">Gen VII</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="8">Gen VIII</button></li>
+                                <li><button type="button" class="dropdown-item gen-option" data-value="9">Gen IX</button></li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="col-5">
                         <button id="search-btn" type="button" class="btn btn-danger w-100 fw-bold">Buscar</button>
@@ -87,6 +95,7 @@
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>
