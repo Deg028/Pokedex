@@ -77,23 +77,26 @@ async function fetchPokemon(query) {
     if (!response.ok) throw new Error("Pokémon no encontrado");
 
     const data = await response.json();
-    
+
     // Obtener información de la especie para la generación
     const speciesResponse = await fetch(data.species.url);
     const speciesData = await speciesResponse.json();
-    
+
     // Si hay un filtro de generación, verificar que coincida
     const selectedGen = generationFilter.value;
-    if (selectedGen && speciesData.generation.name !== `generation-${selectedGen}`) {
+    if (
+      selectedGen &&
+      speciesData.generation.name !== `generation-${selectedGen}`
+    ) {
       throw new Error("Pokémon no encontrado en esa generación");
     }
-    
+
     displayPokemon(data, speciesData);
   } catch (error) {
     pokemonCard.classList.add("hidden");
     errorMessage.classList.remove("hidden");
   }
-}}
+}
 
 function displayPokemon(data, speciesData) {
   errorMessage.classList.add("hidden");
@@ -106,11 +109,13 @@ function displayPokemon(data, speciesData) {
 
   // Asignar nombre
   nameElement.textContent = data.name;
-  
+
   // Asignar generación
-  const genName = speciesData.generation.name.replace("generation-", "").toUpperCase();
+  const genName = speciesData.generation.name
+    .replace("generation-", "")
+    .toUpperCase();
   generationElement.textContent = `Generación: ${genName}`;
-  
+
   // Asignar altura y peso
   heightElement.textContent = (data.height / 10).toFixed(1);
   weightElement.textContent = (data.weight / 10).toFixed(1);
