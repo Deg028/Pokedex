@@ -137,6 +137,34 @@ body {
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
 }
 
+/* Buscador posicionado en la esquina superior izquierda */
+.pokedex-search {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 100%;
+  max-width: 420px;
+  z-index: 5;
+}
+
+/* Tarjeta del Pokémon encontrado (centrada) */
+.result-card {
+  width: 100%;
+  max-width: 360px;
+  border-radius: 18px;
+}
+
+/* En pantallas pequeñas, apilar el buscador arriba y centrarlo */
+@media (max-width: 991.98px) {
+  .pokedex-search {
+    position: static;
+    margin: 0 auto 2rem;
+  }
+  main.container-fluid {
+    flex-direction: column;
+  }
+}
+
 /* Icono del buscador */
 .input-group-text {
   background: #e3350d;
@@ -273,12 +301,15 @@ body.dark input::placeholder {
   color: #777792;
 }
 
-/* Efecto de Pulsación en el botón del Tema */
+/* Botón del Tema — Modo claro (Charmander: rojo, naranja, amarillo) */
 .theme-toggle {
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid #ccc;
+  background: linear-gradient(135deg, #ff3d00 0%, #ff8c00 50%, #ffd000 100%);
+  border: 2px solid #ffb300;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.45);
   z-index: 10;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 14px rgba(255, 120, 0, 0.75);
 }
 .theme-icon img {
   width: 24px;
@@ -287,10 +318,18 @@ body.dark input::placeholder {
 }
 .theme-toggle:hover {
   transform: scale(1.05);
-  background: #ffffff;
+  box-shadow: 0 0 22px rgba(255, 150, 0, 0.95);
 }
+
+/* Botón del Tema — Modo oscuro (Gardevoir: verde, blanco y estela azul oscuro) */
 body.dark .theme-toggle {
-  background: rgba(35, 35, 56, 0.8);
-  border-color: #3f3f5a;
-  color: #ffffff;
+  background: linear-gradient(135deg, #57c785 0%, #ffffff 55%, #1a237e 100%);
+  border-color: #1a237e;
+  color: #12143a;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 16px rgba(26, 35, 126, 0.85);
+}
+body.dark .theme-toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 24px rgba(26, 35, 126, 1);
 }

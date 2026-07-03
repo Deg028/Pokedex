@@ -19,9 +19,10 @@
         <span class="theme-label small">Modo oscuro</span>
     </button>
 
-    <main class="container min-vh-100 d-flex flex-column justify-content-center align-items-center position-relative z-1 py-5">
-        
-        <div class="pokedex-device shadow-lg w-100" style="max-width: 480px;">
+    <main class="container-fluid min-vh-100 d-flex justify-content-center align-items-center position-relative z-1 py-5">
+
+        <!-- Buscador estilo Pokédex (esquina superior izquierda) -->
+        <div class="pokedex-device pokedex-search shadow-lg">
 
             <!-- Panel superior decorativo estilo Pokédex -->
             <div class="pokedex-top">
@@ -37,7 +38,7 @@
             <div class="pokedex-screen text-center">
                 <h1 class="pokedex-title mb-4 h3">Pokédex</h1>
 
-                <div class="row g-2 mb-4">
+                <div class="row g-2 mb-2">
                     <div class="col-12">
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">🔍</span>
@@ -68,29 +69,30 @@
                     </div>
                 </div>
 
-                <div id="pokemon-card" class="card pokemon-card border-0 p-3 hidden">
-                <div class="image-container mx-auto rounded-circle d-flex align-items-center justify-content-center shadow-sm mb-3">
-                    <img id="pokemon-img" class="img-fluid" src="" alt="Pokémon">
-                </div>
-                
-                <h2 id="pokemon-name" class="text-capitalize h4 my-2"></h2>
-                <p id="pokemon-generation" class="small text-muted mb-3"></p>
-                
-                <div id="pokemon-types" class="d-flex justify-content-center gap-2 mb-3"></div>
-                
-                <div class="row g-0 stats-container rounded p-2 bg-white shadow-sm text-secondary small">
-                    <div class="col-6 border-end">
-                        <p class="m-0"><strong>Altura</strong></p>
-                        <p class="m-0"><span id="pokemon-height"></span> m</p>
-                    </div>
-                    <div class="col-6">
-                        <p class="m-0"><strong>Peso</strong></p>
-                        <p class="m-0"><span id="pokemon-weight"></span> kg</p>
-                    </div>
-                </div>
+                <p id="error-message" class="text-danger fw-bold mt-3 small hidden">Pokémon no encontrado o no pertenece a la generación.</p>
+            </div>
+        </div>
+
+        <!-- Tarjeta del Pokémon encontrado (centrada) -->
+        <div id="pokemon-card" class="card pokemon-card result-card border-0 p-4 shadow-lg text-center hidden">
+            <div class="image-container mx-auto rounded-circle d-flex align-items-center justify-content-center shadow-sm mb-3">
+                <img id="pokemon-img" class="img-fluid" src="" alt="Pokémon">
             </div>
 
-                <p id="error-message" class="text-danger fw-bold mt-3 small hidden">Pokémon no encontrado o no pertenece a la generación.</p>
+            <h2 id="pokemon-name" class="text-capitalize h4 my-2"></h2>
+            <p id="pokemon-generation" class="small text-muted mb-3"></p>
+
+            <div id="pokemon-types" class="d-flex justify-content-center gap-2 mb-3"></div>
+
+            <div class="row g-0 stats-container rounded p-2 bg-white shadow-sm text-secondary small">
+                <div class="col-6 border-end">
+                    <p class="m-0"><strong>Altura</strong></p>
+                    <p class="m-0"><span id="pokemon-height"></span> m</p>
+                </div>
+                <div class="col-6">
+                    <p class="m-0"><strong>Peso</strong></p>
+                    <p class="m-0"><span id="pokemon-weight"></span> kg</p>
+                </div>
             </div>
         </div>
     </main>
