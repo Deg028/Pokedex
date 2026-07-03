@@ -2,7 +2,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Press Start 2P", cursive;
 }
 
 body {
@@ -29,11 +29,23 @@ body {
   background-image: url("../sprites/Red.png");
   background-size: cover;
   background-repeat: no-repeat;
-  opacity: 0.20;
+  opacity: 0.2;
   pointer-events: none;
   z-index: 0;
 }
-
+.background-pokemon-left {
+  position: fixed;
+  left: -100px;
+  top: 100px;
+  width: 500px;
+  height: 500px;
+  background-image: url("../sprites/Esmeralda.webp");
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
 body.dark .background-pokemon {
   opacity: 0.06;
 }
@@ -127,13 +139,14 @@ h1 {
 
 input {
   flex: 1;
-  padding: 10px;
+  padding: 8px 10px;
   border: 2px solid #ddd;
   border-radius: 6px;
   outline: none;
   transition: border-color 0.3s;
   background-color: white;
   color: #222;
+  font-size: 0.7rem;
 }
 
 body.dark input {
@@ -147,7 +160,7 @@ input:focus {
 }
 
 button {
-  padding: 10px 15px;
+  padding: 6px 10px;
   background-color: #31a7d7;
   color: white;
   border: none;
@@ -155,6 +168,8 @@ button {
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.3s;
+  font-size: 0.6rem;
+  white-space: nowrap;
 }
 
 button:hover {
