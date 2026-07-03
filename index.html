@@ -31,9 +31,9 @@
     </button>
 
     <main class="container-fluid min-vh-100 position-relative z-1 py-4">
-      <div class="row g-4 justify-content-center">
-        <!-- Buscador estilo Pokédex (columna izquierda) -->
-        <div class="col-12 col-lg-4 col-xl-3">
+      <div class="row g-4 justify-content-center mb-3">
+        <!-- Buscador estilo Pokédex (barra horizontal superior) -->
+        <div class="col-12 d-flex justify-content-center">
           <div class="pokedex-device pokedex-search shadow-lg sticky-lg-top">
             <!-- Panel superior decorativo estilo Pokédex -->
             <div class="pokedex-top">
@@ -49,7 +49,7 @@
             <div class="pokedex-screen text-center">
               <h1 class="pokedex-title mb-4 h3">Pokédex</h1>
 
-              <div class="row g-2 mb-2">
+              <div class="row g-2 mb-2 align-items-stretch">
                 <div class="col-12">
                   <div class="input-group">
                     <span class="input-group-text" aria-hidden="true">🔍</span>
@@ -61,7 +61,7 @@
                     />
                   </div>
                 </div>
-                <div class="col-7">
+                <div class="col-12 col-md-8">
                   <div class="dropdown">
                     <button
                       id="generation-filter"
@@ -171,7 +171,7 @@
                     </ul>
                   </div>
                 </div>
-                <div class="col-5">
+                <div class="col-12 col-md-4">
                   <button
                     id="search-btn"
                     type="button"
@@ -190,16 +190,17 @@
               </p>
             </div>
           </div>
-        </div>
-
-        <!-- Cuadrícula de Pokémon (2x2, centrada) -->
-        <div class="col-12 col-lg-8 col-xl-9 d-flex justify-content-center">
-          <div
-            id="pokemon-grid"
-            class="row row-cols-2 row-cols-md-2 g-3 justify-content-center"
-          ></div>
-        </div>
       </div>
+
+        <div class="row g-4 justify-content-center">
+          <!-- Cuadrícula de Pokémon (2x2, centrada) -->
+          <div class="col-12 d-flex justify-content-center">
+            <div
+              id="pokemon-grid"
+              class="row row-cols-2 row-cols-md-2 g-3 justify-content-center"
+            ></div>
+          </div>
+        </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
