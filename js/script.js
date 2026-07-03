@@ -1,5 +1,6 @@
 const searchBtn = document.getElementById("search-btn");
 const pokemonInput = document.getElementById("pokemon-input");
+const generationFilter = document.getElementById("generation-filter");
 const pokemonCard = document.getElementById("pokemon-card");
 const errorMessage = document.getElementById("error-message");
 const themeToggle = document.getElementById("theme-toggle");
@@ -7,6 +8,7 @@ const themeToggle = document.getElementById("theme-toggle");
 // Referencias a los elementos de la tarjeta
 const imgElement = document.getElementById("pokemon-img");
 const nameElement = document.getElementById("pokemon-name");
+const generationElement = document.getElementById("pokemon-generation");
 const typesElement = document.getElementById("pokemon-types");
 const heightElement = document.getElementById("pokemon-height");
 const weightElement = document.getElementById("pokemon-weight");
@@ -34,6 +36,13 @@ const typeColors = {
 };
 
 searchBtn.addEventListener("click", () => {
+  const query = pokemonInput.value.toLowerCase().trim();
+  if (query) {
+    fetchPokemon(query);
+  }
+});
+
+generationFilter.addEventListener("change", () => {
   const query = pokemonInput.value.toLowerCase().trim();
   if (query) {
     fetchPokemon(query);
@@ -68,28 +77,45 @@ async function fetchPokemon(query) {
     if (!response.ok) throw new Error("Pokémon no encontrado");
 
     const data = await response.json();
-    displayPokemon(data);
+    
+    // Obtener información de la especie para la generación
+    const speciesResponse = await fetch(data.species.url);
+    const speciesData = await speciesResponse.json();
+    
+    // Si hay un filtro de generación, verificar que coincida
+    const selectedGen = generationFilter.value;
+    if (selectedGen && speciesData.generation.name !== `generation-${selectedGen}`) {
+      throw new Error("Pokémon no encontrado en esa generación");
+    }
+    
+    displayPokemon(data, speciesData);
   } catch (error) {
     pokemonCard.classList.add("hidden");
     errorMessage.classList.remove("hidden");
   }
-}
+}}
 
-function displayPokemon(data) {
+function displayPokemon(data, speciesData) {
   errorMessage.classList.add("hidden");
   pokemonCard.classList.remove("hidden");
 
-  // Asignar imagen (usamos el artwork oficial por su alta calidad)
+  // Asignar imagen
   imgElement.src =
     data.sprites.other["official-artwork"].front_default ||
     data.sprites.front_default;
 
-  // Asignar textos (la API devuelve altura y peso en decímetros y hectogramos)
+  // Asignar nombre
   nameElement.textContent = data.name;
+  
+  // Asignar generación
+  const genName = speciesData.generation.name.replace("generation-", "").toUpperCase();
+  generationElement.textContent = `Generación: ${genName}`;
+  
+  // Asignar altura y peso
   heightElement.textContent = (data.height / 10).toFixed(1);
   weightElement.textContent = (data.weight / 10).toFixed(1);
 
-  // Limpiar tipos anteriores y crear los nuevos con su color correspondiente
+  // Limpiar tipos anteriores y crear los nuevos
   typesElement.innerHTML = "";
   data.types.forEach((typeInfo) => {
     const typeName = typeInfo.type.name;

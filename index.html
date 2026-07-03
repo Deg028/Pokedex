@@ -35,6 +35,18 @@
           id="pokemon-input"
           placeholder="Busca por nombre o número..."
         />
+        <select id="generation-filter">
+          <option value="">Todas las generaciones</option>
+          <option value="1">Gen I</option>
+          <option value="2">Gen II</option>
+          <option value="3">Gen III</option>
+          <option value="4">Gen IV</option>
+          <option value="5">Gen V</option>
+          <option value="6">Gen VI</option>
+          <option value="7">Gen VII</option>
+          <option value="8">Gen VIII</option>
+          <option value="9">Gen IX</option>
+        </select>
         <button id="search-btn">Buscar</button>
       </div>
 
@@ -43,6 +55,7 @@
           <img id="pokemon-img" src="" alt="Pokémon" />
         </div>
         <h2 id="pokemon-name"></h2>
+        <p id="pokemon-generation" class="generation-info"></p>
         <div id="pokemon-types" class="types"></div>
         <div class="stats">
           <p><strong>Altura:</strong> <span id="pokemon-height"></span>m</p>

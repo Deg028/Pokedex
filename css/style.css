@@ -149,13 +149,25 @@ input {
   font-size: 0.7rem;
 }
 
-body.dark input {
+select {
+  padding: 8px 10px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.3s;
+  background-color: white;
+  color: #222;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+body.dark select {
   background-color: #374151;
   border-color: #6b7280;
   color: #f3f4f6;
 }
 
-input:focus {
+select:focus {
   border-color: #31a7d7;
 }
 
@@ -216,6 +228,17 @@ body.dark .pokemon-card {
 
 body.dark #pokemon-name {
   color: #f3f4f6;
+}
+
+#pokemon-generation {
+  color: #666;
+  font-size: 0.6rem;
+  margin-bottom: 0.8rem;
+  text-transform: capitalize;
+}
+
+body.dark #pokemon-generation {
+  color: #9ca3af;
 }
 
 .types {
