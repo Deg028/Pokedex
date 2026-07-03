@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokédex Web</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="pokedex-container">
+      <h1>Pokédex</h1>
+
+      <div class="search-bar">
+        <input
+          type="text"
+          id="pokemon-input"
+          placeholder="Busca por nombre o número..."
+        />
+        <button id="search-btn">Buscar</button>
+      </div>
+
+      <div id="pokemon-card" class="pokemon-card hidden">
+        <div class="image-container">
+          <img id="pokemon-img" src="" alt="Pokémon" />
+        </div>
+        <h2 id="pokemon-name"></h2>
+        <div id="pokemon-types" class="types"></div>
+        <div class="stats">
+          <p><strong>Altura:</strong> <span id="pokemon-height"></span>m</p>
+          <p><strong>Peso:</strong> <span id="pokemon-weight"></span>kg</p>
+        </div>
+      </div>
+
+      <p id="error-message" class="error hidden">
+        Pokémon no encontrado. Intenta de nuevo.
+      </p>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
