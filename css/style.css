@@ -173,6 +173,20 @@ input {
   font-size: 0.6rem;
 }
 
+input::placeholder {
+  color: #999;
+}
+
+body.dark input {
+  background-color: #374151;
+  border-color: #6b7280;
+  color: #f3f4f6;
+}
+
+body.dark input::placeholder {
+  color: #9ca3af;
+}
+
 select {
   padding: 6px 8px;
   border: 2px solid #ddd;
