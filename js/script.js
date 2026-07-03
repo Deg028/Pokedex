@@ -124,10 +124,41 @@ function displayPokemon(data, speciesData) {
   typesElement.innerHTML = "";
   data.types.forEach((typeInfo) => {
     const typeName = typeInfo.type.name;
+
+    // Badge de color con texto (respaldo y estado inicial)
     const span = document.createElement("span");
     span.textContent = typeName;
     span.className = "type-badge";
     span.style.backgroundColor = typeColors[typeName] || "#777";
     typesElement.appendChild(span);
+
+    // Buscar el logo oficial del tipo en la PokeAPI y reemplazar el texto
+    fetchTypeLogo(typeInfo.type.url, typeName, span);
   });
+}
+
+// Consulta el endpoint /type/{name} para obtener el sprite del tipo
+async function fetchTypeLogo(typeUrl, typeName, span) {
+  try {
+    const response = await fetch(typeUrl);
+    if (!response.ok) return;
+
+    const typeData = await response.json();
+    const sprites = typeData.sprites || {};
+
+    // Logos por generación (el de Sword/Shield es el más completo)
+    const logoUrl =
+      sprites["generation-viii"]?.["sword-shield"]?.name_icon ||
+      sprites["generation-ix"]?.["scarlet-violet"]?.name_icon;
+
+    if (!logoUrl) return;
+
+    const img = document.createElement("img");
+    img.src = logoUrl;
+    img.alt = typeName;
+    img.className = "type-logo";
+    span.replaceWith(img); // Sustituye el badge de texto por el logo oficial
+  } catch (error) {
+    // Si falla la carga, se conserva el badge de color con texto
+  }
 }
