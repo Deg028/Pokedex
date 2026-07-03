@@ -133,32 +133,36 @@ h1 {
 
 .search-bar {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 input {
   flex: 1;
-  padding: 8px 10px;
+  min-width: 120px;
+  padding: 6px 8px;
   border: 2px solid #ddd;
   border-radius: 6px;
   outline: none;
   transition: border-color 0.3s;
   background-color: white;
   color: #222;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
 }
 
 select {
-  padding: 8px 10px;
+  padding: 6px 8px;
   border: 2px solid #ddd;
   border-radius: 6px;
   outline: none;
   transition: border-color 0.3s;
   background-color: white;
   color: #222;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   cursor: pointer;
+  min-width: 90px;
 }
 
 body.dark select {
