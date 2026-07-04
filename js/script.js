@@ -121,12 +121,14 @@ async function loadGrid(genValue) {
   try {
     const results = await Promise.all(
       ids.map((id) =>
-        fetchJsonWithTimeout(`https://pokeapi.co/api/v2/pokemon/${id}`),
+        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
       ),
     );
 
     pokemonGrid.innerHTML = "";
-    results.filter(Boolean).forEach(addCard);
+    results.filter(Boolean).forEach(renderCard);
   } catch {
     pokemonGrid.innerHTML = "";
     errorMessage.classList.remove("hidden");
@@ -140,54 +142,104 @@ async function searchPokemon(query) {
 
   const selectedGen = generationFilter.dataset.value;
   const [start, end] = GEN_RANGES[selectedGen] || GEN_RANGES[""];
+  const q = normalizePokemonQuery(query);
 
+  if (!q) {
+    pokemonGrid.innerHTML = "";
+    errorMessage.classList.remove("hidden");
+    return;
+  }
+
+  // Búsqueda exacta — fetch directo sin wrappers para máxima compatibilidad.
+  let exactData = null;
   try {
-    const normalizedQuery = normalizePokemonQuery(query);
-    if (!normalizedQuery) throw new Error("Consulta vacia");
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${q}`);
+    if (res.ok) exactData = await res.json();
+  } catch {
+    /* error de red, continuar con búsqueda parcial */
+  }
+  console.debug(
+    "searchPokemon:exactData",
+    !!exactData,
+    exactData?.name,
+    exactData?.id,
+  );
+  console.debug(
+    `search exact: ${!!exactData} ${exactData?.name || ""} ${exactData?.id || ""}`,
+  );
 
-    // Búsqueda exacta por nombre o número directamente en la REST API.
-    const exactData = await fetchJsonWithTimeout(
-      `https://pokeapi.co/api/v2/pokemon/${normalizedQuery}`,
-    );
-
-    if (exactData) {
-      if (selectedGen && (exactData.id < start || exactData.id > end)) {
-        throw new Error("No pertenece a esa generación");
-      }
+  if (exactData) {
+    if (selectedGen && (exactData.id < start || exactData.id > end)) {
       pokemonGrid.innerHTML = "";
-      addCard(exactData);
+      errorMessage.classList.remove("hidden");
       return;
     }
+    pokemonGrid.innerHTML = "";
+    renderCard(exactData);
+    return;
+  }
 
-    // Búsqueda parcial por nombre en la lista completa.
+  // Búsqueda parcial por nombre en la lista completa.
+  try {
     const pokemonList = await getPokemonList();
     const matchingIds = pokemonList
       .map((p) => ({ name: p.name, id: extractPokemonId(p.url) }))
       .filter(
         (p) =>
           p.id &&
-          p.name.includes(normalizedQuery) &&
+          p.name.includes(q) &&
           (!selectedGen || (p.id >= start && p.id <= end)),
       )
       .slice(0, SEARCH_RESULT_LIMIT)
       .map((p) => p.id);
 
-    if (!matchingIds.length) throw new Error("Pokémon no encontrado");
+    console.debug("searchPokemon:matchingIdsCount", matchingIds.length);
+    console.debug(`matchingIds: ${matchingIds.length}`);
+    if (!matchingIds.length) {
+      pokemonGrid.innerHTML = "";
+      errorMessage.classList.remove("hidden");
+      return;
+    }
 
     const results = await Promise.all(
       matchingIds.map((id) =>
-        fetchJsonWithTimeout(`https://pokeapi.co/api/v2/pokemon/${id}`),
+        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
       ),
     );
 
     const validResults = results.filter(Boolean);
-    if (!validResults.length) throw new Error("Pokémon no encontrado");
+    console.debug(
+      "searchPokemon:resolvedResults",
+      results.length,
+      validResults.length,
+    );
+    console.debug(
+      `resolvedResults: total=${results.length} valid=${validResults.length}`,
+    );
+    if (!validResults.length) {
+      pokemonGrid.innerHTML = "";
+      errorMessage.classList.remove("hidden");
+      return;
+    }
 
     pokemonGrid.innerHTML = "";
-    validResults.forEach(addCard);
+    validResults.forEach(renderCard);
   } catch {
     pokemonGrid.innerHTML = "";
     errorMessage.classList.remove("hidden");
+  }
+}
+
+// Envuelve addCard para que errores de render no borren el grid.
+function renderCard(data) {
+  try {
+    console.debug("renderCard:invoked", data?.name, data?.id);
+    console.debug(`renderCard: ${data?.name || ""} ${data?.id || ""}`);
+    addCard(data);
+  } catch (e) {
+    console.error("Error al renderizar card para", data?.name, e);
   }
 }
 
@@ -203,6 +255,8 @@ function showSpinner() {
 
 // Crea y añade una card de Pokémon a la cuadrícula
 function addCard(data) {
+  console.debug("addCard:start", data?.name, data?.id);
+  console.debug(`addCard:start ${data?.name || ""} ${data?.id || ""}`);
   const col = document.createElement("div");
   col.className = "col";
 
@@ -244,7 +298,7 @@ function addCard(data) {
   // Tipos
   const types = document.createElement("div");
   types.className = "d-flex flex-wrap justify-content-center gap-1";
-  data.types.forEach((typeInfo) => {
+  (data.types || []).forEach((typeInfo) => {
     const typeName = typeInfo.type.name;
 
     const badge = document.createElement("span");
@@ -264,8 +318,11 @@ function addCard(data) {
     });
   });
 
-  addSpecialBadges(data.id, card, types);
+  // Primero añadir los tipos al DOM para que cualquier inserción posterior
+  // (badges de species) pueda usar types como referencia de inserción.
   card.appendChild(types);
+  // Añadir badges especiales (legendario/mítico) de forma segura.
+  addSpecialBadges(data.id, card, types);
 
   // Efecto y grito al pasar el mouse.
   card.addEventListener("mouseenter", () => {
@@ -288,6 +345,8 @@ function addCard(data) {
 
   col.appendChild(card);
   pokemonGrid.appendChild(col);
+  console.debug("addCard:appended", data?.name, data?.id);
+  console.debug(`addCard:appended ${data?.name || ""} ${data?.id || ""}`);
 }
 
 function getCryUrl(data) {
@@ -349,7 +408,21 @@ function addSpecialBadges(pokemonId, card, typesElement) {
       wrap.appendChild(badge);
     });
 
-    card.insertBefore(wrap, typesElement);
+    // Intentar insertarlo antes de typesElement; si falla, añadir al final.
+    try {
+      if (typesElement && typesElement.parentNode === card) {
+        card.insertBefore(wrap, typesElement);
+      } else {
+        card.appendChild(wrap);
+      }
+    } catch (e) {
+      console.error("No fue posible insertar badges de species:", e);
+      try {
+        card.appendChild(wrap);
+      } catch (e2) {
+        console.error("Fallo al añadir badge de species al card:", e2);
+      }
+    }
   });
 }
 
@@ -432,3 +505,5 @@ function fetchPokemonByQuery(query) {
 
 // ---------- Inicio ----------
 loadGrid("");
+
+// Debug UI removed
