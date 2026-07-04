@@ -366,6 +366,33 @@ body.dark .grid-card .type-logo {
   height: 16px;
 }
 
+.special-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.legendary-badge {
+  background: linear-gradient(135deg, #f7d046 0%, #cf9f20 100%);
+}
+
+.mythical-badge {
+  background: linear-gradient(135deg, #ff5da2 0%, #b53a86 100%);
+}
+
+body.dark .special-badge {
+  border-color: rgba(0, 0, 0, 0.55);
+}
+
 @keyframes cry-bounce {
   0% {
     transform: translateY(0) scale(1);

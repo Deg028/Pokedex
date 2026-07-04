@@ -42,10 +42,14 @@ const GEN_RANGES = {
 };
 
 const GRID_SIZE = 9; // Cuadrícula de 3x3
+const SEARCH_RESULT_LIMIT = 18;
 const CRY_COOLDOWN_MS = 900;
+const API_TIMEOUT_MS = 10000;
 
 // Caché de logos de tipos para evitar peticiones repetidas
 const typeLogoCache = new Map();
+const speciesCache = new Map();
+let pokemonListCache = null;
 const lastCryByPokemon = new Map();
 const pokemonCryPlayer = new Audio();
 pokemonCryPlayer.preload = "none";
@@ -117,15 +121,13 @@ async function loadGrid(genValue) {
   try {
     const results = await Promise.all(
       ids.map((id) =>
-        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
-          .then((res) => (res.ok ? res.json() : null))
-          .catch(() => null),
+        fetchJsonWithTimeout(`https://pokeapi.co/api/v2/pokemon/${id}`),
       ),
     );
 
     pokemonGrid.innerHTML = "";
     results.filter(Boolean).forEach(addCard);
-  } catch (error) {
+  } catch {
     pokemonGrid.innerHTML = "";
     errorMessage.classList.remove("hidden");
   }
@@ -136,24 +138,54 @@ async function searchPokemon(query) {
   errorMessage.classList.add("hidden");
   showSpinner();
 
+  const selectedGen = generationFilter.dataset.value;
+  const [start, end] = GEN_RANGES[selectedGen] || GEN_RANGES[""];
+
   try {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${query}`);
-    if (!response.ok) throw new Error("Pokémon no encontrado");
+    const normalizedQuery = normalizePokemonQuery(query);
+    if (!normalizedQuery) throw new Error("Consulta vacia");
 
-    const data = await response.json();
+    // Búsqueda exacta por nombre o número directamente en la REST API.
+    const exactData = await fetchJsonWithTimeout(
+      `https://pokeapi.co/api/v2/pokemon/${normalizedQuery}`,
+    );
 
-    // Verificar que pertenezca a la generación seleccionada (si hay filtro)
-    const selectedGen = generationFilter.dataset.value;
-    if (selectedGen) {
-      const [start, end] = GEN_RANGES[selectedGen];
-      if (data.id < start || data.id > end) {
+    if (exactData) {
+      if (selectedGen && (exactData.id < start || exactData.id > end)) {
         throw new Error("No pertenece a esa generación");
       }
+      pokemonGrid.innerHTML = "";
+      addCard(exactData);
+      return;
     }
 
+    // Búsqueda parcial por nombre en la lista completa.
+    const pokemonList = await getPokemonList();
+    const matchingIds = pokemonList
+      .map((p) => ({ name: p.name, id: extractPokemonId(p.url) }))
+      .filter(
+        (p) =>
+          p.id &&
+          p.name.includes(normalizedQuery) &&
+          (!selectedGen || (p.id >= start && p.id <= end)),
+      )
+      .slice(0, SEARCH_RESULT_LIMIT)
+      .map((p) => p.id);
+
+    if (!matchingIds.length) throw new Error("Pokémon no encontrado");
+
+    const results = await Promise.all(
+      matchingIds.map((id) =>
+        fetchJsonWithTimeout(`https://pokeapi.co/api/v2/pokemon/${id}`),
+      ),
+    );
+
+    const validResults = results.filter(Boolean);
+    if (!validResults.length) throw new Error("Pokémon no encontrado");
+
     pokemonGrid.innerHTML = "";
-    addCard(data);
-  } catch (error) {
+    validResults.forEach(addCard);
+  } catch {
     pokemonGrid.innerHTML = "";
     errorMessage.classList.remove("hidden");
   }
@@ -197,8 +229,9 @@ function addCard(data) {
   img.className = "img-fluid";
   img.alt = data.name;
   img.src =
-    data.sprites.other["official-artwork"].front_default ||
-    data.sprites.front_default;
+    data.sprites?.other?.["official-artwork"]?.front_default ||
+    data.sprites?.front_default ||
+    "";
   imgWrap.appendChild(img);
   card.appendChild(imgWrap);
 
@@ -230,6 +263,8 @@ function addCard(data) {
       badge.replaceWith(logo);
     });
   });
+
+  addSpecialBadges(data.id, card, types);
   card.appendChild(types);
 
   // Efecto y grito al pasar el mouse.
@@ -291,14 +326,40 @@ function animateCardCry(card) {
   card.classList.add("card-crying");
 }
 
+function addSpecialBadges(pokemonId, card, typesElement) {
+  getPokemonSpecies(pokemonId).then((speciesData) => {
+    if (!speciesData) return;
+
+    const badges = [];
+    if (speciesData.is_legendary) {
+      badges.push({ text: "Legendario", className: "legendary-badge" });
+    }
+    if (speciesData.is_mythical) {
+      badges.push({ text: "Mitico", className: "mythical-badge" });
+    }
+    if (!badges.length) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-wrap justify-content-center gap-1 mb-1";
+
+    badges.forEach((badgeData) => {
+      const badge = document.createElement("span");
+      badge.className = `special-badge ${badgeData.className}`;
+      badge.textContent = badgeData.text;
+      wrap.appendChild(badge);
+    });
+
+    card.insertBefore(wrap, typesElement);
+  });
+}
+
 // Obtiene el logo oficial de un tipo desde la PokeAPI (cacheado)
 function getTypeLogo(type) {
   if (typeLogoCache.has(type.name)) {
     return typeLogoCache.get(type.name);
   }
 
-  const promise = fetch(type.url)
-    .then((res) => (res.ok ? res.json() : null))
+  const promise = fetchJsonWithTimeout(type.url, 7000)
     .then((typeData) => {
       if (!typeData) return null;
       const sprites = typeData.sprites || {};
@@ -312,6 +373,61 @@ function getTypeLogo(type) {
 
   typeLogoCache.set(type.name, promise);
   return promise;
+}
+
+function getPokemonSpecies(pokemonId) {
+  if (speciesCache.has(pokemonId)) {
+    return speciesCache.get(pokemonId);
+  }
+
+  const promise = fetchJsonWithTimeout(
+    `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`,
+    7000,
+  ).catch(() => null);
+
+  speciesCache.set(pokemonId, promise);
+  return promise;
+}
+
+async function getPokemonList() {
+  if (pokemonListCache) {
+    return pokemonListCache;
+  }
+
+  pokemonListCache = fetchJsonWithTimeout(
+    "https://pokeapi.co/api/v2/pokemon?limit=2000",
+  )
+    .then((data) => data?.results || [])
+    .catch(() => []);
+
+  return pokemonListCache;
+}
+
+function extractPokemonId(url) {
+  const match = url.match(/\/pokemon\/(\d+)\/?$/);
+  return match ? Number(match[1]) : null;
+}
+
+function normalizePokemonQuery(query) {
+  return query
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function fetchJsonWithTimeout(url, timeoutMs = API_TIMEOUT_MS, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  return fetch(url, { ...options, signal: controller.signal })
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null)
+    .finally(() => clearTimeout(timeoutId));
+}
+
+function fetchPokemonByQuery(query) {
+  return fetchJsonWithTimeout(`https://pokeapi.co/api/v2/pokemon/${query}`);
 }
 
 // ---------- Inicio ----------
