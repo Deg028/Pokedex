@@ -32,7 +32,7 @@ body {
 .background-pokemon-left {
   position: fixed;
   left: -100px;
-  top: 100px;
+  top: 220px;
   width: 500px;
   height: 500px;
   background-image: url("../sprites/Esmeralda.webp");
@@ -276,6 +276,44 @@ body {
   position: relative;
   z-index: 1;
 }
+
+body.dark .grid-card {
+  background: linear-gradient(180deg, #111111 0 40%, #e8e1c2 40% 100%);
+  border-color: #d6b23f;
+  box-shadow:
+    0 0 0 1px rgba(214, 178, 63, 0.35),
+    0 14px 26px rgba(0, 0, 0, 0.45);
+}
+body.dark .grid-card:hover {
+  box-shadow:
+    0 0 0 1px rgba(214, 178, 63, 0.5),
+    0 16px 30px rgba(0, 0, 0, 0.55);
+}
+body.dark .grid-card::before {
+  height: 12px;
+  background: linear-gradient(
+    90deg,
+    #d6b23f 0 18%,
+    #111111 18% 82%,
+    #d6b23f 82% 100%
+  );
+}
+body.dark .grid-card::after {
+  background: linear-gradient(180deg, #f9f1d2 0 50%, #d9cfac 50% 100%);
+  border-color: #111111;
+  box-shadow: 0 0 0 3px #d6b23f;
+}
+body.dark .grid-card .poke-id,
+body.dark .grid-card .poke-name {
+  color: #f3f0df;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
+}
+body.dark .grid-card .type-badge {
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+body.dark .grid-card .type-logo {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+}
 .image-container-sm {
   width: 60px;
   height: 60px;
@@ -388,9 +426,68 @@ body.dark {
 }
 
 body.dark .pokedex-screen {
-  background: linear-gradient(180deg, #232338 0%, #161625 100%);
-  border-color: #000000;
-  color: #f3f4f6;
+  background: linear-gradient(
+    180deg,
+    #1a1a1a 0%,
+    #111111 48%,
+    #f0e2b0 48%,
+    #e0cf8a 100%
+  );
+  border-color: #d6b23f;
+  color: #fdf7df;
+  box-shadow:
+    inset 0 2px 8px rgba(255, 220, 110, 0.12),
+    0 0 0 1px rgba(214, 178, 63, 0.22);
+}
+
+body.dark .pokedex-title {
+  color: #ffd84d;
+  text-shadow:
+    2px 2px 0 #9a7200,
+    0 0 10px rgba(214, 178, 63, 0.35);
+}
+
+body.dark .pokedex-device {
+  background: linear-gradient(155deg, #111111 0%, #1f1f1f 34%, #d6b23f 100%);
+  border-color: #d6b23f;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.45),
+    inset 0 2px 6px rgba(255, 240, 190, 0.12);
+}
+
+body.dark .pokedex-device::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+body.dark .pokedex-top {
+  padding: 2px 6px 12px;
+}
+
+body.dark .pokedex-lens {
+  border-color: #f3e2a3;
+  box-shadow:
+    0 0 0 2px #111111,
+    inset 0 2px 4px rgba(255, 255, 255, 0.55);
+}
+
+body.dark .pokedex-lights .light {
+  border-color: #111111;
+}
+
+body.dark .pokedex-lights .light-red {
+  background: #ff5f5f;
+}
+
+body.dark .pokedex-lights .light-yellow {
+  background: #ffd95c;
+}
+
+body.dark .pokedex-lights .light-green {
+  background: #63e07a;
 }
 
 body.dark .pokemon-card {
@@ -418,6 +515,60 @@ body.dark select {
   background-color: #232338;
   border-color: #3f3f5a;
   color: #ffffff;
+}
+
+body.dark .pokedex-search .input-group-text {
+  background: linear-gradient(135deg, #f0d66d 0%, #d6b23f 100%);
+  color: #111111;
+  border-color: #111111;
+}
+
+body.dark .pokedex-search .form-control {
+  background-color: #f4ebc5;
+  border-color: #111111;
+  color: #111111;
+}
+
+body.dark .pokedex-search .form-control::placeholder {
+  color: #6f6441;
+}
+
+body.dark .pokedex-search .dropdown-toggle {
+  background: linear-gradient(135deg, #111111 0%, #242424 100%);
+  border-color: #d6b23f;
+  color: #fdf7df;
+}
+
+body.dark .pokedex-search #search-btn {
+  background: linear-gradient(135deg, #f3db7a 0%, #d6b23f 100%);
+  border-color: #111111;
+  color: #111111;
+  box-shadow: 0 0 0 1px rgba(214, 178, 63, 0.25);
+}
+
+body.dark .pokedex-search #search-btn:hover {
+  box-shadow:
+    0 0 0 1px rgba(214, 178, 63, 0.45),
+    0 10px 22px rgba(0, 0, 0, 0.35);
+}
+
+body.dark .pokedex-search .dropdown-menu {
+  background-color: #111111;
+  border-color: #d6b23f;
+}
+
+body.dark .pokedex-search .gen-option {
+  color: #fdf7df;
+}
+
+body.dark .pokedex-search .gen-option:hover {
+  background-color: #2a2a2a;
+  color: #f3e2a3;
+}
+
+body.dark .pokedex-search .gen-option.active {
+  background-color: #d6b23f;
+  color: #111111;
 }
 
 /* Dropdown de generaciones en modo oscuro */
