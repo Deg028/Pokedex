@@ -42,9 +42,14 @@ const GEN_RANGES = {
 };
 
 const GRID_SIZE = 9; // Cuadrícula de 3x3
+const CRY_COOLDOWN_MS = 900;
 
 // Caché de logos de tipos para evitar peticiones repetidas
 const typeLogoCache = new Map();
+const lastCryByPokemon = new Map();
+const pokemonCryPlayer = new Audio();
+pokemonCryPlayer.preload = "none";
+pokemonCryPlayer.volume = 0.45;
 
 // ---------- Eventos ----------
 
@@ -114,8 +119,8 @@ async function loadGrid(genValue) {
       ids.map((id) =>
         fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
           .then((res) => (res.ok ? res.json() : null))
-          .catch(() => null)
-      )
+          .catch(() => null),
+      ),
     );
 
     pokemonGrid.innerHTML = "";
@@ -170,8 +175,13 @@ function addCard(data) {
   col.className = "col";
 
   const card = document.createElement("div");
-  card.className =
-    "card pokemon-card grid-card h-100 border-0 p-2 text-center";
+  card.className = "card pokemon-card grid-card h-100 border-0 p-2 text-center";
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.setAttribute(
+    "aria-label",
+    `Reproducir grito de ${data.name} y seleccionar card`,
+  );
 
   // Número de la Pokédex
   const id = document.createElement("span");
@@ -222,8 +232,63 @@ function addCard(data) {
   });
   card.appendChild(types);
 
+  // Efecto y grito al pasar el mouse.
+  card.addEventListener("mouseenter", () => {
+    animateCardCry(card);
+    playPokemonCry(data);
+  });
+
+  // Efecto y grito al seleccionar con click o teclado.
+  card.addEventListener("click", () => {
+    animateCardCry(card);
+    playPokemonCry(data, { force: true });
+  });
+
+  card.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    animateCardCry(card);
+    playPokemonCry(data, { force: true });
+  });
+
   col.appendChild(card);
   pokemonGrid.appendChild(col);
+}
+
+function getCryUrl(data) {
+  return data?.cries?.latest || data?.cries?.legacy || null;
+}
+
+function canPlayCry(pokemonId, force) {
+  if (force) return true;
+
+  const now = Date.now();
+  const lastPlayedAt = lastCryByPokemon.get(pokemonId) || 0;
+  if (now - lastPlayedAt < CRY_COOLDOWN_MS) return false;
+
+  lastCryByPokemon.set(pokemonId, now);
+  return true;
+}
+
+function playPokemonCry(data, { force = false } = {}) {
+  const cryUrl = getCryUrl(data);
+  if (!cryUrl || !canPlayCry(data.id, force)) return;
+
+  if (pokemonCryPlayer.src !== cryUrl) {
+    pokemonCryPlayer.src = cryUrl;
+  }
+
+  pokemonCryPlayer.currentTime = 0;
+  pokemonCryPlayer.play().catch(() => {
+    // Algunos navegadores bloquean autoplay si no detectan gesto de usuario.
+  });
+}
+
+function animateCardCry(card) {
+  card.classList.remove("card-crying");
+  // Forzar reflow para reiniciar la animación en eventos consecutivos.
+  void card.offsetWidth;
+  card.classList.add("card-crying");
 }
 
 // Obtiene el logo oficial de un tipo desde la PokeAPI (cacheado)

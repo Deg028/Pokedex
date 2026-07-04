@@ -35,7 +35,7 @@ body {
   top: 220px;
   width: 500px;
   height: 500px;
-  background-image: url("../sprites/Esmeralda.webp");
+  background-image: url("../sprites/Green.webp");
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0.12;
@@ -192,6 +192,10 @@ body {
 }
 
 @media (min-width: 992px) {
+  .pokedex-search {
+    max-width: min(860px, calc(100vw - 260px));
+  }
+
   .pokedex-search .row.g-2.mb-2.align-items-stretch {
     flex-wrap: nowrap;
   }
@@ -229,23 +233,35 @@ body {
   isolation: isolate;
   background: linear-gradient(180deg, #f24b4b 0 42%, #f7f7f7 42% 100%);
   border: 4px solid #181818;
-  width: min(100%, 172px);
+  width: min(100%, 154px);
   aspect-ratio: 1;
   border-radius: 50%;
-  padding: 0.5rem !important;
+  padding: 0.42rem !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   cursor: pointer;
+  will-change: transform, box-shadow;
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 .grid-card:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(-6px) scale(1.04);
+  filter: saturate(1.08);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+}
+
+.grid-card.card-crying {
+  animation: cry-bounce 0.42s ease;
+}
+
+.grid-card:focus-visible {
+  outline: 3px solid rgba(227, 53, 13, 0.55);
+  outline-offset: 2px;
 }
 .grid-card::before {
   content: "";
@@ -285,9 +301,15 @@ body.dark .grid-card {
     0 14px 26px rgba(0, 0, 0, 0.45);
 }
 body.dark .grid-card:hover {
+  transform: translateY(-6px) scale(1.04);
+  filter: saturate(1.12);
   box-shadow:
     0 0 0 1px rgba(214, 178, 63, 0.5),
     0 16px 30px rgba(0, 0, 0, 0.55);
+}
+
+body.dark .grid-card:focus-visible {
+  outline-color: rgba(214, 178, 63, 0.68);
 }
 body.dark .grid-card::before {
   height: 12px;
@@ -315,13 +337,13 @@ body.dark .grid-card .type-logo {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
 }
 .image-container-sm {
-  width: 60px;
-  height: 60px;
+  width: 54px;
+  height: 54px;
   background-color: #f4f7f9;
 }
 .grid-card img.img-fluid {
-  max-width: 44px;
-  max-height: 44px;
+  max-width: 40px;
+  max-height: 40px;
 }
 .poke-id {
   font-size: 7px;
@@ -342,6 +364,41 @@ body.dark .grid-card .type-logo {
 }
 .grid-card .type-logo {
   height: 16px;
+}
+
+@keyframes cry-bounce {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    transform: translateY(-8px) scale(1.06) rotate(-1deg);
+  }
+  65% {
+    transform: translateY(-2px) scale(1.02) rotate(1deg);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (min-width: 1200px) {
+  .grid-card {
+    width: min(100%, 146px);
+  }
+
+  .image-container-sm {
+    width: 50px;
+    height: 50px;
+  }
+
+  .grid-card img.img-fluid {
+    max-width: 36px;
+    max-height: 36px;
+  }
+
+  .grid-card .type-logo {
+    height: 14px;
+  }
 }
 
 /* Icono del buscador */
@@ -423,6 +480,14 @@ body.dark .grid-card .type-logo {
 body.dark {
   background-color: #1a1a2e;
   color: #f3f4f6;
+}
+
+body.dark .background-pokemon {
+  background-image: url("../sprites/Esmeralda.webp");
+}
+
+body.dark .background-pokemon-left {
+  background-image: url("../sprites/May.webp");
 }
 
 body.dark .pokedex-screen {
@@ -631,6 +696,6 @@ body.dark .theme-toggle:hover {
 
 @media (min-width: 992px) {
   main.container-fluid {
-    padding-top: 6rem !important;
+    padding-top: 4.75rem !important;
   }
 }
