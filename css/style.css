@@ -488,7 +488,7 @@ body {
   width: min(680px, 92vw);
   max-height: 88vh;
   overflow: auto;
-  background: var(--card-bg);
+  background: var(--card-bg); 
   color: var(--card-text);
   border: 4px solid var(--input-border);
   border-radius: 14px;
@@ -1033,7 +1033,7 @@ body.dark .grid-card .type-logo {
 }
 .poke-id {
   font-size: 7px;
-  color: #9aa0a6;
+  color: #ffffff;
 }
 .poke-name {
   font-size: 7px;

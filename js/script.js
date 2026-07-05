@@ -151,7 +151,16 @@ async function loadMore() {
         continue;
       break;
     }
-    if (pokemonGrid.children.length === 0 && empty) empty.hidden = false;
+    // Solo mostrar "sin resultados" si esta llamada sigue siendo la vigente
+    // y además todos los IDs fueron procesados (no hay más páginas)
+    if (
+      myId === requestId &&
+      pokemonGrid.children.length === 0 &&
+      renderedCount >= ids.length &&
+      empty
+    ) {
+      empty.hidden = false;
+    }
   } catch (e) {
     console.error(e);
   } finally {
