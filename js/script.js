@@ -237,13 +237,13 @@ function openDetail(p) {
     p.sprites?.front_default ||
     "";
   const stats = (p.stats || [])
-    .map((s) => {
+    .map((s, i) => {
       const val = s.base_stat;
       const pct = Math.min(100, (val / 200) * 100);
       return `
       <div class="stat">
         <div class="stat__label">${s.stat.name.replace("-", " ")}</div>
-        <div class="stat__bar"><div class="stat__fill" style="width:${pct}%"></div></div>
+        <div class="stat__bar"><div class="stat__fill" data-pct="${pct}" style="transition-delay:${i * 90}ms"></div></div>
         <div class="stat__val">${val}</div>
       </div>`;
     })
@@ -272,6 +272,18 @@ function openDetail(p) {
   `;
   modal.hidden = false;
   document.body.style.overflow = "hidden";
+
+  // Animar barras con el color del tipo principal
+  const primaryType = (p.types || [])[0]?.type?.name || "normal";
+  const barColor = typeColors[primaryType] || "#ee1515";
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      modalContent.querySelectorAll(".stat__fill").forEach((bar) => {
+        bar.style.background = barColor;
+        bar.style.width = bar.dataset.pct + "%";
+      });
+    });
+  });
 }
 
 // ---------- Audio / Cry ----------

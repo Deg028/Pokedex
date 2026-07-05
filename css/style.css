@@ -488,7 +488,7 @@ body {
   width: min(680px, 92vw);
   max-height: 88vh;
   overflow: auto;
-  background: var(--card-bg); 
+  background: var(--card-bg);
   color: var(--card-text);
   border: 4px solid var(--input-border);
   border-radius: 14px;
@@ -564,8 +564,9 @@ body {
 }
 .stat__fill {
   height: 100%;
-  background: linear-gradient(90deg, #ffcb05, #ee1515);
+  width: 0;
   border-radius: 999px;
+  transition: width 0.55s ease-out;
 }
 .stat__val {
   text-align: right;
