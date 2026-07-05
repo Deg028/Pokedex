@@ -425,6 +425,10 @@ const musicPlaylist = [
   },
   { name: "Colosseum — Miror B.", url: MUSIC_BASE + "colosseum-miror-b.mp3" },
   { name: "Pokémon XD — Miror B.", url: MUSIC_BASE + "xd-miror-b.mp3" },
+  {
+    name: "Pokémon Scarlet & Violet — Penny (Battle Music)",
+    url: "https://raw.githubusercontent.com/Deg028/pokedex-music/a5737e0174fc8cf369e522cb459b8f8f1ae6e055/Pok%C3%A9mon%20Scarlet%20%26%20Violet%20-%20Penny%20Battle%20Music%20(HQ).mp3",
+  },
 ];
 
 const musicAudio = new Audio();
