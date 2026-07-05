@@ -222,7 +222,6 @@ function buildCard(p) {
   });
   card.appendChild(typesDiv);
 
-  card.addEventListener("mouseenter", () => tryPlayCry(p));
   card.addEventListener("click", () => {
     tryPlayCry(p, { force: true });
     openDetail(p);
