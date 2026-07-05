@@ -387,3 +387,107 @@ setTheme(localStorage.getItem("pokedex-theme") || "light");
 
 // ---------- Init ----------
 runSearch();
+
+// ---------- Music player ----------
+const MUSIC_BASE = "https://play.pokemonshowdown.com/audio/";
+const musicPlaylist = [
+  { name: "Pokémon B/W — Tema Entrenador", url: MUSIC_BASE + "bw-trainer.mp3" },
+  {
+    name: "Pokémon D/P/Pt — Tema Entrenador",
+    url: MUSIC_BASE + "dpp-trainer.mp3",
+  },
+  {
+    name: "Pokémon HG/SS — Entrenador Johto",
+    url: MUSIC_BASE + "hgss-johto-trainer.mp3",
+  },
+  {
+    name: "Pokémon HG/SS — Entrenador Kanto",
+    url: MUSIC_BASE + "hgss-kanto-trainer.mp3",
+  },
+  { name: "Pokémon X/Y — Tema Entrenador", url: MUSIC_BASE + "xy-trainer.mp3" },
+  {
+    name: "Pokémon OR/AS — Tema Entrenador",
+    url: MUSIC_BASE + "oras-trainer.mp3",
+  },
+  { name: "Pokémon S/M — Tema Entrenador", url: MUSIC_BASE + "sm-trainer.mp3" },
+  { name: "Pokémon B/W — Rival", url: MUSIC_BASE + "bw-rival.mp3" },
+  { name: "Pokémon D/P/Pt — Rival", url: MUSIC_BASE + "dpp-rival.mp3" },
+  { name: "Pokémon X/Y — Rival", url: MUSIC_BASE + "xy-rival.mp3" },
+  { name: "Pokémon B/W2 — Rival", url: MUSIC_BASE + "bw2-rival.mp3" },
+  {
+    name: "Pokémon B/W2 — Gym Leader Kanto",
+    url: MUSIC_BASE + "bw2-kanto-gym-leader.mp3",
+  },
+  { name: "Pokémon SPL — Élite Cuatro", url: MUSIC_BASE + "spl-elite4.mp3" },
+  {
+    name: "Pokémon B/W — Metro Entrenador",
+    url: MUSIC_BASE + "bw-subway-trainer.mp3",
+  },
+  { name: "Colosseum — Miror B.", url: MUSIC_BASE + "colosseum-miror-b.mp3" },
+  { name: "Pokémon XD — Miror B.", url: MUSIC_BASE + "xd-miror-b.mp3" },
+];
+
+const musicAudio = new Audio();
+musicAudio.volume = 0.35;
+let musicIdx = 0;
+let musicIsPlaying = false;
+
+const musicTrackEl = document.getElementById("musicTrackName");
+const musicToggleBtn = document.getElementById("musicToggle");
+const musicPrevBtn = document.getElementById("musicPrev");
+const musicNextBtn = document.getElementById("musicNext");
+const musicNoteEl = document.getElementById("musicNote");
+
+function loadMusicTrack(idx) {
+  musicIdx =
+    ((idx % musicPlaylist.length) + musicPlaylist.length) %
+    musicPlaylist.length;
+  const track = musicPlaylist[musicIdx];
+  musicAudio.src = track.url;
+  if (musicTrackEl) musicTrackEl.textContent = track.name;
+}
+
+function setMusicState(playing) {
+  musicIsPlaying = playing;
+  if (musicToggleBtn) musicToggleBtn.textContent = playing ? "⏸" : "▶";
+  if (musicNoteEl) musicNoteEl.classList.toggle("playing", playing);
+}
+
+function playMusic() {
+  musicAudio
+    .play()
+    .then(() => setMusicState(true))
+    .catch(() => {});
+}
+function pauseMusic() {
+  musicAudio.pause();
+  setMusicState(false);
+}
+
+musicAudio.addEventListener("ended", () => {
+  loadMusicTrack(musicIdx + 1);
+  playMusic();
+});
+musicAudio.addEventListener("error", () => {
+  setTimeout(() => {
+    loadMusicTrack(musicIdx + 1);
+    if (musicIsPlaying) playMusic();
+  }, 300);
+});
+
+if (musicToggleBtn)
+  musicToggleBtn.addEventListener("click", () =>
+    musicIsPlaying ? pauseMusic() : playMusic(),
+  );
+if (musicPrevBtn)
+  musicPrevBtn.addEventListener("click", () => {
+    loadMusicTrack(musicIdx - 1);
+    if (musicIsPlaying) playMusic();
+  });
+if (musicNextBtn)
+  musicNextBtn.addEventListener("click", () => {
+    loadMusicTrack(musicIdx + 1);
+    if (musicIsPlaying) playMusic();
+  });
+
+loadMusicTrack(0);
