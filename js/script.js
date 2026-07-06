@@ -426,8 +426,12 @@ const musicPlaylist = [
   { name: "Colosseum — Miror B.", url: MUSIC_BASE + "colosseum-miror-b.mp3" },
   { name: "Pokémon XD — Miror B.", url: MUSIC_BASE + "xd-miror-b.mp3" },
   {
-    name: "Pokémon Scarlet/Violet — Penny (Battle Music)",
+    name: "Pokémon Scarlet/Violet Penny Battle Music",
     url: "https://raw.githubusercontent.com/Deg028/pokedex-music/a5737e0174fc8cf369e522cb459b8f8f1ae6e055/Pok%C3%A9mon%20Scarlet%20%26%20Violet%20-%20Penny%20Battle%20Music%20(HQ).mp3",
+  },
+  {
+    name: "Pokémon Omega Ruby/Alpha Sapphire — Battle VS Magma/Aqua Team Leader",
+    url: "https://raw.githubusercontent.com/Deg028/pokedex-music/86fb379de2bffaf6dfd7b6e8ecdbeaef89b93947/Pok%C3%A9mon%20Omega%20Ruby%20%26%20Alpha%20Sapphire%20-%20Team%20Aqua%20%26%20Magma%20Battle.mp3",
   },
 ];
 
