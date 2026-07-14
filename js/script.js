@@ -430,8 +430,12 @@ const musicPlaylist = [
     url: "https://raw.githubusercontent.com/Deg028/pokedex-music/a5737e0174fc8cf369e522cb459b8f8f1ae6e055/Pok%C3%A9mon%20Scarlet%20%26%20Violet%20-%20Penny%20Battle%20Music%20(HQ).mp3",
   },
   {
-    name: "Pokémon Ruby VS Magma/Aqua Team Leader",
+    name: "Pkmn Ruby/Saphire VS Magma/Aqua Team Leader",
     url: "https://raw.githubusercontent.com/Deg028/pokedex-music/86fb379de2bffaf6dfd7b6e8ecdbeaef89b93947/Pok%C3%A9mon%20Omega%20Ruby%20%26%20Alpha%20Sapphire%20-%20Team%20Aqua%20%26%20Magma%20Battle.mp3",
+  },
+  {
+    name: "Pkmn Black/White Ghetsis Battle",
+    url: "https://raw.githubusercontent.com/Deg028/pokedex-music/7a6c2d53bea61bc664f708cc5b076a72a8310203/Pok%C3%A9mon%20Black%20%26%20White%20-%20Ghetsis%20Battle%20Music%20(HQ).mp3",
   },
 ];
 
