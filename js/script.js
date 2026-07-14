@@ -75,16 +75,33 @@ let currentList = {};
 let renderedCount = 0;
 let isLoading = false;
 let requestId = 0;
+let currentAbortController = null;
 
 // ---------- Audio ----------
 const pokemonCryPlayer = new Audio();
 pokemonCryPlayer.preload = "none";
 pokemonCryPlayer.volume = 0.45;
 
+// ---------- Storage helpers (a prueba de localStorage bloqueado) ----------
+function safeGetItem(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* localStorage no disponible (modo incógnito estricto, etc.) */
+  }
+}
+
 // ---------- Fetch helper ----------
-async function fetchJSON(url) {
+async function fetchJSON(url, signal) {
   if (cache.has(url)) return cache.get(url);
-  const res = await fetch(url);
+  const res = await fetch(url, { signal });
   if (!res.ok) throw new Error("Fetch failed");
   const data = await res.json();
   cache.set(url, data);
@@ -116,6 +133,9 @@ async function runSearch() {
   const { ids, nameQuery } = buildList();
   currentList = { ids, nameQuery };
   requestId++;
+  // Cancela cualquier búsqueda anterior que siga en curso
+  if (currentAbortController) currentAbortController.abort();
+  currentAbortController = new AbortController();
   await loadMore();
 }
 
@@ -127,6 +147,7 @@ async function loadMore() {
   isLoading = true;
   if (loader) loader.hidden = false;
   const myId = requestId;
+  const signal = currentAbortController?.signal;
 
   try {
     let added = 0;
@@ -138,8 +159,12 @@ async function loadMore() {
       const batch = ids.slice(renderedCount, renderedCount + PAGE_SIZE);
       renderedCount += batch.length;
       const results = await Promise.all(
-        batch.map((id) => fetchJSON(`${API}/pokemon/${id}`).catch(() => null)),
+        batch.map((id) =>
+          fetchJSON(`${API}/pokemon/${id}`, signal).catch(() => null),
+        ),
       );
+      // Si esta búsqueda fue cancelada mientras esperábamos, detenerse aquí
+      if (myId !== requestId) return;
       const filtered = results.filter((p) => {
         if (!p) return false;
         if (nameQuery) return p.name.includes(nameQuery);
@@ -160,9 +185,12 @@ async function loadMore() {
       empty
     ) {
       empty.hidden = false;
+      empty.textContent = navigator.onLine
+        ? "No se encontraron resultados."
+        : "Sin conexión a internet. Revisa tu red e intenta de nuevo.";
     }
   } catch (e) {
-    console.error(e);
+    if (e.name !== "AbortError") console.error(e);
   } finally {
     isLoading = false;
     if (loader) loader.hidden = true;
@@ -222,10 +250,20 @@ function buildCard(p) {
   });
   card.appendChild(typesDiv);
 
-  card.addEventListener("click", () => {
+  const openThisCard = () => {
     tryPlayCry(p, { force: true });
     openDetail(p);
+  };
+
+  card.addEventListener("click", openThisCard);
+  // Accesibilidad: permitir abrir la tarjeta con teclado (Enter / Espacio)
+  card.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openThisCard();
+    }
   });
+
   return card;
 }
 
@@ -372,7 +410,7 @@ function setTheme(theme) {
     if (themeLabel) themeLabel.textContent = "Modo oscuro";
     if (themeIcon) themeIcon.src = "sprites/Charmander.png";
   }
-  localStorage.setItem("pokedex-theme", theme);
+  safeSetItem("pokedex-theme", theme);
 }
 if (themeToggleBtn) {
   themeToggleBtn.addEventListener("click", () => {
@@ -383,7 +421,7 @@ if (themeToggleBtn) {
     );
   });
 }
-setTheme(localStorage.getItem("pokedex-theme") || "light");
+setTheme(safeGetItem("pokedex-theme") || "light");
 
 // ---------- Init ----------
 runSearch();
@@ -426,22 +464,19 @@ const musicPlaylist = [
   { name: "Colosseum — Miror B.", url: MUSIC_BASE + "colosseum-miror-b.mp3" },
   { name: "Pokémon XD — Miror B.", url: MUSIC_BASE + "xd-miror-b.mp3" },
   {
-    name: "Pokémon Scarlet/Violet Penny Battle Music",
+    name: "Pokémon Scarlet & Violet — Penny (Battle Music)",
     url: "https://raw.githubusercontent.com/Deg028/pokedex-music/a5737e0174fc8cf369e522cb459b8f8f1ae6e055/Pok%C3%A9mon%20Scarlet%20%26%20Violet%20-%20Penny%20Battle%20Music%20(HQ).mp3",
   },
   {
-    name: "Pkmn Ruby/Saphire VS Magma/Aqua Team Leader",
+    name: "Pokémon OR/AS — Team Aqua & Magma (Batalla)",
     url: "https://raw.githubusercontent.com/Deg028/pokedex-music/86fb379de2bffaf6dfd7b6e8ecdbeaef89b93947/Pok%C3%A9mon%20Omega%20Ruby%20%26%20Alpha%20Sapphire%20-%20Team%20Aqua%20%26%20Magma%20Battle.mp3",
-  },
-  {
-    name: "Pkmn Black/White Ghetsis Battle",
-    url: "https://raw.githubusercontent.com/Deg028/pokedex-music/7a6c2d53bea61bc664f708cc5b076a72a8310203/Pok%C3%A9mon%20Black%20%26%20White%20-%20Ghetsis%20Battle%20Music%20(HQ).mp3",
   },
 ];
 
 const musicAudio = new Audio();
 musicAudio.volume = 0.35;
-let musicIdx = 0;
+// Retoma la última canción reproducida, si existe
+let musicIdx = parseInt(safeGetItem("pokedex-music-idx"), 10) || 0;
 let musicIsPlaying = false;
 
 const musicTrackEl = document.getElementById("musicTrackName");
@@ -457,6 +492,7 @@ function loadMusicTrack(idx) {
   const track = musicPlaylist[musicIdx];
   musicAudio.src = track.url;
   if (musicTrackEl) musicTrackEl.textContent = track.name;
+  safeSetItem("pokedex-music-idx", String(musicIdx));
 }
 
 function setMusicState(playing) {
@@ -502,7 +538,7 @@ if (musicNextBtn)
     if (musicIsPlaying) playMusic();
   });
 
-loadMusicTrack(0);
+loadMusicTrack(musicIdx);
 
 // ---------- Pantalla de carga ----------
 const loadingScreen = document.getElementById("loading-screen");
