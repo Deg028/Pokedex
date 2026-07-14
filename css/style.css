@@ -1513,29 +1513,41 @@ body.dark .theme-toggle:hover {
 
 /* Imágenes decorativas alternas en modo responsive, flotando junto a la barra de búsqueda */
 @media (max-width: 780px) {
+  /* Ocultar las imágenes grandes de fondo en las esquinas de la pantalla */
   .background-pokemon,
   .background-pokemon-left,
   body.dark .background-pokemon,
   body.dark .background-pokemon-left {
-    top: 130px;
-    bottom: auto;
-    width: 80px;
-    height: 80px;
-    opacity: 0.85;
+    display: none;
+  }
+
+  /* Anclar los íconos decorativos a la pantalla de la Pokédex (donde vive el buscador) */
+  .pokedex-screen {
+    position: relative;
+  }
+
+  .pokedex-screen::before,
+  .pokedex-screen::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    width: 46px;
+    height: 46px;
     background-size: contain;
+    background-repeat: no-repeat;
     background-position: center;
+    opacity: 0.95;
+    pointer-events: none;
+    z-index: 2;
   }
 
-  .background-pokemon,
-  body.dark .background-pokemon {
-    right: 8px;
-    left: auto;
-    background-image: url("../sprites/Omega.png");
-  }
-
-  .background-pokemon-left,
-  body.dark .background-pokemon-left {
-    left: 8px;
+  .pokedex-screen::before {
+    left: -8px;
     background-image: url("../sprites/Sprite.gif");
+  }
+
+  .pokedex-screen::after {
+    right: -8px;
+    background-image: url("../sprites/Omega.png");
   }
 }
