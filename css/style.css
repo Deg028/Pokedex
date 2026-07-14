@@ -1510,3 +1510,32 @@ body.dark .theme-toggle:hover {
     padding-top: 4.75rem !important;
   }
 }
+
+/* Imágenes decorativas alternas en modo responsive, flotando junto a la barra de búsqueda */
+@media (max-width: 780px) {
+  .background-pokemon,
+  .background-pokemon-left,
+  body.dark .background-pokemon,
+  body.dark .background-pokemon-left {
+    top: 130px;
+    bottom: auto;
+    width: 80px;
+    height: 80px;
+    opacity: 0.85;
+    background-size: contain;
+    background-position: center;
+  }
+
+  .background-pokemon,
+  body.dark .background-pokemon {
+    right: 8px;
+    left: auto;
+    background-image: url("../sprites/Omega.png");
+  }
+
+  .background-pokemon-left,
+  body.dark .background-pokemon-left {
+    left: 8px;
+    background-image: url("../sprites/Sprite.gif");
+  }
+}
