@@ -488,6 +488,9 @@ body {
   min-width: 300px;
   max-width: 90vw;
   user-select: none;
+  transition:
+    top 0.2s ease,
+    bottom 0.2s ease;
 }
 [data-theme="dark"] .music-player {
   border-color: rgba(212, 160, 23, 0.45);
@@ -762,6 +765,16 @@ body {
   .theme-toggle img {
     width: 22px;
     height: 22px;
+  }
+
+  /* Reproductor de música abajo del todo en pantallas responsive */
+  .music-player {
+    top: auto;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: unset;
+    width: calc(100vw - 24px);
   }
 }
 @media (max-width: 420px) {
