@@ -503,3 +503,12 @@ if (musicNextBtn)
   });
 
 loadMusicTrack(0);
+
+// ---------- Pantalla de carga ----------
+const loadingScreen = document.getElementById("loading-screen");
+if (loadingScreen) {
+  setTimeout(() => {
+    loadingScreen.classList.add("hide");
+    setTimeout(() => loadingScreen.remove(), 500);
+  }, 1500);
+}
