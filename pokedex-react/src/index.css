@@ -808,7 +808,7 @@ body {
   bottom: -100px;
   width: 500px;
   height: 500px;
-  background-image: url("../sprites/Red.png");
+  background-image: url("public/sprites/Red.png");
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0.15;
@@ -822,7 +822,7 @@ body {
   top: 220px;
   width: 500px;
   height: 500px;
-  background-image: url("../sprites/Green.webp");
+  background-image: url("public/sprites/Green.webp");
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0.12;
@@ -1292,11 +1292,11 @@ body.dark {
 }
 
 body.dark .background-pokemon {
-  background-image: url("../sprites/Esmeralda.webp");
+  background-image: url("public/sprites/Esmeralda.webp");
 }
 
 body.dark .background-pokemon-left {
-  background-image: url("../sprites/May.webp");
+  background-image: url("public/sprites/May.webp");
 }
 
 body.dark .pokedex-screen {
@@ -1621,11 +1621,11 @@ body.dark .theme-toggle:hover {
 
   .pokedex-screen::before {
     left: -8px;
-    background-image: url("../sprites/Sprite.gif");
+    background-image: url("public/sprites/Sprite.gif");
   }
 
   .pokedex-screen::after {
     right: -8px;
-    background-image: url("../sprites/Omega.png");
+    background-image: url("public/sprites/Omega.png");
   }
 }
