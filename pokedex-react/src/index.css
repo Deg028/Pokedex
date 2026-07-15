@@ -1294,11 +1294,11 @@ body.dark {
 }
 
 body.dark .background-pokemon {
-  background-image: url("public/sprites/Esmeralda.webp");
+  background-image: url("/sprites/Esmeralda.webp");
 }
 
 body.dark .background-pokemon-left {
-  background-image: url("public/sprites/May.webp");
+  background-image: url("/sprites/May.webp");
 }
 
 body.dark .pokedex-screen {
@@ -1623,11 +1623,11 @@ body.dark .theme-toggle:hover {
 
   .pokedex-screen::before {
     left: -8px;
-    background-image: url("sprites/Sprite.gif");
+    background-image: url("/sprites/Sprite.gif");
   }
 
   .pokedex-screen::after {
     right: -8px;
-    background-image: url("sprites/Omega.png");
+    background-image: url("/sprites/Omega.png");
   }
 }
