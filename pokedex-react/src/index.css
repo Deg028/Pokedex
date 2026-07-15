@@ -808,7 +808,8 @@ body {
   bottom: -100px;
   width: 500px;
   height: 500px;
-  background-image: url("public/sprites/Red.png");
+  /* Corrección: Quitar "public" y agregar "/" al inicio */
+  background-image: url("/sprites/Red.png");
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0.15;
@@ -822,7 +823,8 @@ body {
   top: 220px;
   width: 500px;
   height: 500px;
-  background-image: url("Pokedex/pokedex-react/public/sprites/Green.webp");
+  /* Corrección: Quitar la ruta de carpetas de tu PC y dejar solo desde "/sprites..." */
+  background-image: url("/sprites/Green.webp");
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0.12;
