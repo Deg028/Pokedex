@@ -1623,11 +1623,11 @@ body.dark .theme-toggle:hover {
 
   .pokedex-screen::before {
     left: -8px;
-    background-image: url("public/sprites/Sprite.gif");
+    background-image: url("publi/sprites/Sprite.gif");
   }
 
   .pokedex-screen::after {
     right: -8px;
-    background-image: url("public/sprites/Omega.png");
+    background-image: url("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/336e8c7f-ad35-4575-a757-5fe24f7ec2c8/d7m96q3-884c8a46-64ab-465f-bedc-aeb4ae7b5ab6.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi8zMzZlOGM3Zi1hZDM1LTQ1NzUtYTc1Ny01ZmUyNGY3ZWMyYzgvZDdtOTZxMy04ODRjOGE0Ni02NGFiLTQ2NWYtYmVkYy1hZWI0YWU3YjVhYjYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.zVG1MBuoDvgJ8rGyZNkLM1e-G6aD0x3HL8g7ftrSrf8");
   }
 }
