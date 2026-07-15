@@ -1,14 +1,27 @@
 import { useState, useEffect } from 'react';
 
+function safeGet(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+}
+
 const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(false);
+  // Inicializa leyendo la preferencia guardada (igual que tu versión original en JS puro)
+  const [isDark, setIsDark] = useState(() => safeGet('pokedex-theme') === 'dark');
 
   useEffect(() => {
-    if (isDark) {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
+    const theme = isDark ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.classList.toggle('dark', isDark);
+    safeSet('pokedex-theme', theme);
   }, [isDark]);
 
   return (
@@ -16,14 +29,13 @@ const ThemeToggle = () => {
       className="theme-toggle"
       type="button"
       aria-label="Cambiar tema"
-      onClick={() => setIsDark(!isDark)}
+      onClick={() => setIsDark((prev) => !prev)}
     >
       <span className="theme-icon" aria-hidden="true">
-        {/* Rutas absolutas actualizadas con / al inicio */}
         {isDark ? (
-          <img src="/sprites/Gardevoir.webp" alt="Modo claro" />
+          <img src="/sprites/Gardevoir.webp" alt="" />
         ) : (
-          <img src="/sprites/Charmander.png" alt="Modo oscuro" />
+          <img src="/sprites/Charmander.png" alt="" />
         )}
       </span>
       <span className="theme-label">
