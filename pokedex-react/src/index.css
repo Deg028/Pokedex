@@ -822,7 +822,7 @@ body {
   top: 220px;
   width: 500px;
   height: 500px;
-  background-image: url("public/sprites/Green.webp");
+  background-image: url("Pokedex/pokedex-react/public/sprites/Green.webp");
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0.12;
