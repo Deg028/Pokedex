@@ -242,8 +242,9 @@ function buildCard(p) {
   megaReady.then(() => {
     if (!megaMap.has(card.dataset.species)) return;
     const gem = document.createElement("span");
-    gem.className = "pb-mega-gem";
-    gem.title = "Tiene Megaevolución";
+    const primal = formKindOf(card.dataset.species) === "primal";
+    gem.className = "pb-mega-gem" + (primal ? ` pb-mega-gem--${card.dataset.species === "groudon" ? "red" : "blue"}` : "");
+    gem.title = primal ? "Tiene Regresión primigenia" : "Tiene Megaevolución";
     card.querySelector(".pb-top").appendChild(gem);
   });
 
@@ -383,7 +384,8 @@ async function loadOrigin(p, panel, token) {
 }
 
 // ---------- Megaevolución ----------
-// Formas Mega desde PokeAPI: pokemon con "-mega" en el nombre, agrupadas por especie base.
+// Formas Mega y Primigenias (Groudon/Kyogre) desde PokeAPI: pokemon con "-mega" o "-primal"
+// en el nombre, agrupadas por especie base.
 const megaMap = new Map();
 let megaStoneNames = [];
 const megaReady = Promise.all([
@@ -392,7 +394,7 @@ const megaReady = Promise.all([
 ])
   .then(([list, cat]) => {
     list.results.forEach((r) => {
-      const i = r.name.indexOf("-mega");
+      const i = r.name.search(/-(mega|primal)/);
       if (i > 0) {
         const base = r.name.slice(0, i);
         if (!megaMap.has(base)) megaMap.set(base, []);
@@ -403,8 +405,12 @@ const megaReady = Promise.all([
   })
   .catch(() => {});
 
+const isPrimal = (formName) => formName.includes("-primal");
+const formKindOf = (base) => ((megaMap.get(base) || [])[0]?.includes("-primal") ? "primal" : "mega");
+
 // Elige la megapiedra que mejor coincide con la forma (mayor prefijo común, mismo sufijo x/y/z)
 function stoneSlugFor(formName) {
+  if (isPrimal(formName)) return formName.startsWith("groudon") ? "red-orb" : "blue-orb";
   const i = formName.indexOf("-mega");
   const base = formName.slice(0, i);
   const suffix = (formName.slice(i + 5).match(/-([xyz])$/) || [])[1] || "";
@@ -431,13 +437,14 @@ async function fetchStone(formName) {
   return {
     name: item.names?.find((n) => n.language.name === "es")?.name || item.name.replace(/-/g, " "),
     img: item.sprites?.default || "",
+    kind: isPrimal(formName) ? "Orbe primigenio" : "Piedra Mega",
   };
 }
 
 const stoneChip = (stone) =>
   `<div class="pb-stone">
      ${stone?.img ? `<img src="${stone.img}" alt="" width="40" height="40">` : '<span class="pb-gem" aria-hidden="true"></span>'}
-     <div><span>Piedra Mega</span><b>${escapeHTML(stone?.name || "Megapiedra")}</b></div></div>`;
+     <div><span>${stone?.kind || "Piedra Mega"}</span><b>${escapeHTML(stone?.name || "Megapiedra")}</b></div></div>`;
 
 const megaLabel = (name) => name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -447,13 +454,14 @@ async function loadMega(p, panel, token) {
   const forms = (await Promise.all(names.map((n) => fetchJSON(`${API}/pokemon/${n}`).catch(() => null)))).filter(Boolean);
   if (panel.dataset.token !== token) return;
   if (!forms.length) {
-    panel.innerHTML = '<p class="pb-flavor">Sin datos de Megaevolución.</p>';
+    panel.innerHTML = '<p class="pb-flavor">Sin datos de forma alterna.</p>';
     return;
   }
 
   const art = (x) => x.sprites?.other?.["official-artwork"]?.front_default || x.sprites?.front_default || "";
   const baseArt = art(p);
   const bst = (x) => (x.stats || []).reduce((a, s) => a + s.base_stat, 0);
+  const primal = formKindOf(p.species?.name) === "primal";
   let cur = 0;
   let isMega = false;
 
@@ -472,6 +480,7 @@ async function loadMega(p, panel, token) {
     <div class="pb-mega-meta"></div>`;
 
   const stage = panel.querySelector(".pb-stage");
+  if (primal) stage.classList.add(p.species.name === "groudon" ? "pb-stage--red" : "pb-stage--blue");
   const img = stage.querySelector("img");
   const spin = stage.querySelector(".pb-stage__spin");
   const cap = stage.querySelector(".pb-stage__cap");
@@ -484,7 +493,7 @@ async function loadMega(p, panel, token) {
     img.src = isMega ? art(f) : baseArt;
     img.alt = isMega ? megaLabel(f.name) : p.name;
     cap.textContent = (isMega ? megaLabel(f.name) : p.name).toUpperCase();
-    btn.textContent = isMega ? "Volver a forma base" : "Megaevolucionar";
+    btn.textContent = isMega ? "Volver a forma base" : primal ? "Regresión primigenia" : "Megaevolucionar";
     stage.classList.toggle("is-mega", isMega);
     const chips = f.types.map((t) => `<span class="pb-chip"><i style="background:${typeColors[t.type.name] || "#777"}"></i>${t.type.name}</span>`).join("");
     const diff = bst(f) - bst(p);
@@ -607,7 +616,7 @@ function openDetail(p) {
           <p class="pb-flavor">Cargando origen…</p>
         </section>
         <section data-panel="mega" hidden data-token="${token}">
-          <p class="pb-flavor">Cargando Megaevolución…</p>
+          <p class="pb-flavor">Cargando forma alterna…</p>
         </section>
       </div>
     </div>`;
@@ -623,12 +632,14 @@ function openDetail(p) {
   megaReady.then(async () => {
     const forms = megaMap.get(p.species?.name);
     if (!forms || mapPanel.dataset.token !== token || !mapPanel.isConnected) return;
-    modalContent.querySelector('[data-tab="mega"]').hidden = false;
+    const tabBtn = modalContent.querySelector('[data-tab="mega"]');
+    tabBtn.hidden = false;
+    if (formKindOf(p.species?.name) === "primal") tabBtn.textContent = "Primigenio";
     const stones = (await Promise.all(forms.map(fetchStone))).filter(Boolean);
     const uniq = [...new Map(stones.map((x) => [x.name, x])).values()];
     const slot = modalContent.querySelector("[data-stone-slot]");
     if (slot && mapPanel.isConnected && mapPanel.dataset.token === token) {
-      slot.innerHTML = `<h4 class="pb-sub">Megapiedra</h4>${(uniq.length ? uniq : [null]).map(stoneChip).join("")}`;
+      slot.innerHTML = `<h4 class="pb-sub">${formKindOf(p.species?.name) === "primal" ? "Orbe primigenio" : "Megapiedra"}</h4>${(uniq.length ? uniq : [null]).map(stoneChip).join("")}`;
     }
   });
   modalContent.querySelectorAll(".pb-tabs button").forEach((btn) => {

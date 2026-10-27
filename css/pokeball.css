@@ -1131,3 +1131,31 @@ html[data-theme="dark"] main .pokedex-search .dropdown-menu {
     height: 160px;
   }
 }
+
+/* ---------- Formas primigenias (Groudon / Kyogre) ---------- */
+.pb-mega-gem--red,
+.pb-mega-gem--blue {
+  transform: none;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+.pb-mega-gem--red {
+  background: radial-gradient(circle at 35% 30%, #ffb3a0, #e3350d 55%, #7a1204);
+}
+.pb-mega-gem--blue {
+  background: radial-gradient(circle at 35% 30%, #b3d4ff, #1f6bff 55%, #0b2a7a);
+}
+.pb-stage--red.is-mega {
+  background: radial-gradient(circle at 50% 60%, #b02a0a, #1c0a07 72%);
+  border-color: #ff7a4d;
+}
+.pb-stage--blue.is-mega {
+  background: radial-gradient(circle at 50% 60%, #1550c8, #070d1f 72%);
+  border-color: #5db7ff;
+}
+.pb-stage--red.is-mega .pb-stage__glow {
+  background: radial-gradient(ellipse, rgba(255, 110, 60, 0.6), transparent 70%);
+}
+.pb-stage--blue.is-mega .pb-stage__glow {
+  background: radial-gradient(ellipse, rgba(80, 160, 255, 0.6), transparent 70%);
+}
