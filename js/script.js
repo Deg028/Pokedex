@@ -217,6 +217,7 @@ function buildCard(p) {
   card.tabIndex = 0;
   card.setAttribute("role", "button");
   card.setAttribute("aria-label", p.name);
+  card.dataset.species = p.species?.name || p.name;
 
   const chips = (p.types || [])
     .map((t) => {
@@ -238,6 +239,13 @@ function buildCard(p) {
     <div class="pb-ring"><img alt="" loading="lazy"></div>`;
   card.querySelector(".pb-name").textContent = p.name;
   card.querySelector(".pb-ring img").src = img;
+  megaReady.then(() => {
+    if (!megaMap.has(card.dataset.species)) return;
+    const gem = document.createElement("span");
+    gem.className = "pb-mega-gem";
+    gem.title = "Tiene Megaevolución";
+    card.querySelector(".pb-top").appendChild(gem);
+  });
 
   const openThisCard = () => {
     tryPlayCry(p, { force: true });
@@ -374,6 +382,172 @@ async function loadOrigin(p, panel, token) {
   });
 }
 
+// ---------- Megaevolución ----------
+// Formas Mega desde PokeAPI: pokemon con "-mega" en el nombre, agrupadas por especie base.
+const megaMap = new Map();
+let megaStoneNames = [];
+const megaReady = Promise.all([
+  fetchJSON(`${API}/pokemon?limit=2000`),
+  fetchJSON(`${API}/item-category/mega-stones`),
+])
+  .then(([list, cat]) => {
+    list.results.forEach((r) => {
+      const i = r.name.indexOf("-mega");
+      if (i > 0) {
+        const base = r.name.slice(0, i);
+        if (!megaMap.has(base)) megaMap.set(base, []);
+        megaMap.get(base).push(r.name);
+      }
+    });
+    megaStoneNames = cat.items.map((it) => it.name);
+  })
+  .catch(() => {});
+
+// Elige la megapiedra que mejor coincide con la forma (mayor prefijo común, mismo sufijo x/y/z)
+function stoneSlugFor(formName) {
+  const i = formName.indexOf("-mega");
+  const base = formName.slice(0, i);
+  const suffix = (formName.slice(i + 5).match(/-([xyz])$/) || [])[1] || "";
+  let best = null;
+  let bestLen = 0;
+  megaStoneNames.forEach((s) => {
+    const m = s.match(/^(.*?)(?:-([xyz]))?$/);
+    if (m[2] !== undefined ? m[2] !== suffix : suffix !== "") return;
+    let k = 0;
+    while (k < base.length && k < m[1].length && base[k] === m[1][k]) k++;
+    if (k >= Math.min(5, base.length) && k > bestLen) {
+      best = s;
+      bestLen = k;
+    }
+  });
+  return best;
+}
+
+async function fetchStone(formName) {
+  const slug = stoneSlugFor(formName);
+  if (!slug) return null;
+  const item = await fetchJSON(`${API}/item/${slug}`).catch(() => null);
+  if (!item) return null;
+  return {
+    name: item.names?.find((n) => n.language.name === "es")?.name || item.name.replace(/-/g, " "),
+    img: item.sprites?.default || "",
+  };
+}
+
+const stoneChip = (stone) =>
+  `<div class="pb-stone">
+     ${stone?.img ? `<img src="${stone.img}" alt="" width="40" height="40">` : '<span class="pb-gem" aria-hidden="true"></span>'}
+     <div><span>Piedra Mega</span><b>${escapeHTML(stone?.name || "Megapiedra")}</b></div></div>`;
+
+const megaLabel = (name) => name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+async function loadMega(p, panel, token) {
+  await megaReady;
+  const names = megaMap.get(p.species?.name) || [];
+  const forms = (await Promise.all(names.map((n) => fetchJSON(`${API}/pokemon/${n}`).catch(() => null)))).filter(Boolean);
+  if (panel.dataset.token !== token) return;
+  if (!forms.length) {
+    panel.innerHTML = '<p class="pb-flavor">Sin datos de Megaevolución.</p>';
+    return;
+  }
+
+  const art = (x) => x.sprites?.other?.["official-artwork"]?.front_default || x.sprites?.front_default || "";
+  const baseArt = art(p);
+  const bst = (x) => (x.stats || []).reduce((a, s) => a + s.base_stat, 0);
+  let cur = 0;
+  let isMega = false;
+
+  panel.innerHTML = `
+    <div class="pb-stage" tabindex="0" aria-label="Modelo giratorio, arrastra para girar">
+      <div class="pb-stage__glow"></div>
+      <div class="pb-stage__spin"><img alt=""></div>
+      <div class="pb-stage__shadow"></div>
+      <span class="pb-stage__cap"></span>
+      <span class="pb-stage__hint">Arrastra para girar 360°</span>
+    </div>
+    <div class="pb-mega-actions">
+      <button type="button" class="pb-mega-btn" data-act="mega"></button>
+      ${forms.length > 1 ? forms.map((f, i) => `<button type="button" class="pb-mega-form${i ? "" : " active"}" data-form="${i}">${escapeHTML(megaLabel(f.name).replace(/^.*Mega ?/, "") || "Mega")}</button>`).join("") : ""}
+    </div>
+    <div class="pb-mega-meta"></div>`;
+
+  const stage = panel.querySelector(".pb-stage");
+  const img = stage.querySelector("img");
+  const spin = stage.querySelector(".pb-stage__spin");
+  const cap = stage.querySelector(".pb-stage__cap");
+  const btn = panel.querySelector('[data-act="mega"]');
+  const meta = panel.querySelector(".pb-mega-meta");
+
+  const stoneCache = {};
+  const render = async () => {
+    const f = forms[cur];
+    img.src = isMega ? art(f) : baseArt;
+    img.alt = isMega ? megaLabel(f.name) : p.name;
+    cap.textContent = (isMega ? megaLabel(f.name) : p.name).toUpperCase();
+    btn.textContent = isMega ? "Volver a forma base" : "Megaevolucionar";
+    stage.classList.toggle("is-mega", isMega);
+    const chips = f.types.map((t) => `<span class="pb-chip"><i style="background:${typeColors[t.type.name] || "#777"}"></i>${t.type.name}</span>`).join("");
+    const diff = bst(f) - bst(p);
+    stoneCache[cur] ??= await fetchStone(f.name);
+    if (panel.dataset.token !== token) return;
+    meta.innerHTML = `
+      ${stoneChip(stoneCache[cur])}
+      <div class="pb-chips pb-chips--lg">${chips}</div>
+      <div class="pb-info">
+        <div class="pb-info__row"><span>Total de stats base</span><b>${bst(p)} → ${bst(f)}</b></div>
+        <div class="pb-info__row"><span>Diferencia</span><b>${diff >= 0 ? "+" : ""}${diff}</b></div>
+      </div>`;
+  };
+
+  const flash = () => {
+    stage.classList.remove("flash");
+    void stage.offsetWidth; // reinicia la animación
+    stage.classList.add("flash");
+  };
+  btn.addEventListener("click", () => {
+    isMega = !isMega;
+    flash();
+    render();
+  });
+  panel.querySelectorAll(".pb-mega-form").forEach((b) =>
+    b.addEventListener("click", () => {
+      cur = +b.dataset.form;
+      isMega = true;
+      panel.querySelectorAll(".pb-mega-form").forEach((x) => x.classList.toggle("active", x === b));
+      flash();
+      render();
+    }),
+  );
+  render();
+
+  // Giro 3D: automático y con arrastre
+  let angle = 0;
+  let dragging = false;
+  let lastX = 0;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  stage.addEventListener("pointerdown", (e) => {
+    dragging = true;
+    lastX = e.clientX;
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener("pointermove", (e) => {
+    if (dragging) {
+      angle += (e.clientX - lastX) * 0.8;
+      lastX = e.clientX;
+    }
+  });
+  const stop = () => (dragging = false);
+  stage.addEventListener("pointerup", stop);
+  stage.addEventListener("pointercancel", stop);
+  const tick = () => {
+    if (!stage.isConnected || modal.hidden) return;
+    if (!dragging && !reduce) angle += 0.6;
+    spin.style.transform = `rotateX(-8deg) rotateY(${angle}deg)`;
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+
 // ---------- Detail modal ----------
 function openDetail(p) {
   if (!modal || !modalContent) return;
@@ -414,6 +588,7 @@ function openDetail(p) {
         <div class="pb-tabs" role="tablist">
           <button type="button" role="tab" class="active" data-tab="stats">Estadísticas</button>
           <button type="button" role="tab" data-tab="map">Mapa y origen</button>
+          <button type="button" role="tab" data-tab="mega" hidden>Mega</button>
         </div>
         <section data-panel="stats">
           <div class="meta">
@@ -426,9 +601,13 @@ function openDetail(p) {
           <div class="abilities">
             ${(p.abilities || []).map((a) => `<span class="ability">${a.ability.name.replace("-", " ")}</span>`).join("")}
           </div>
+          <div data-stone-slot></div>
         </section>
         <section data-panel="map" hidden data-token="${token}">
           <p class="pb-flavor">Cargando origen…</p>
+        </section>
+        <section data-panel="mega" hidden data-token="${token}">
+          <p class="pb-flavor">Cargando Megaevolución…</p>
         </section>
       </div>
     </div>`;
@@ -437,11 +616,29 @@ function openDetail(p) {
 
   // Pestañas (el origen se carga al abrir la pestaña por primera vez)
   const mapPanel = modalContent.querySelector('[data-panel="map"]');
+  const megaPanel = modalContent.querySelector('[data-panel="mega"]');
   let originLoaded = false;
+  let megaLoaded = false;
+  // Si la especie tiene Megaevolución: muestra la pestaña y la piedra en los datos
+  megaReady.then(async () => {
+    const forms = megaMap.get(p.species?.name);
+    if (!forms || mapPanel.dataset.token !== token || !mapPanel.isConnected) return;
+    modalContent.querySelector('[data-tab="mega"]').hidden = false;
+    const stones = (await Promise.all(forms.map(fetchStone))).filter(Boolean);
+    const uniq = [...new Map(stones.map((x) => [x.name, x])).values()];
+    const slot = modalContent.querySelector("[data-stone-slot]");
+    if (slot && mapPanel.isConnected && mapPanel.dataset.token === token) {
+      slot.innerHTML = `<h4 class="pb-sub">Megapiedra</h4>${(uniq.length ? uniq : [null]).map(stoneChip).join("")}`;
+    }
+  });
   modalContent.querySelectorAll(".pb-tabs button").forEach((btn) => {
     btn.addEventListener("click", () => {
       modalContent.querySelectorAll(".pb-tabs button").forEach((b) => b.classList.toggle("active", b === btn));
       modalContent.querySelectorAll("[data-panel]").forEach((s) => (s.hidden = s.dataset.panel !== btn.dataset.tab));
+      if (btn.dataset.tab === "mega" && !megaLoaded) {
+        megaLoaded = true;
+        loadMega(p, megaPanel, token);
+      }
       if (btn.dataset.tab === "map" && !originLoaded) {
         originLoaded = true;
         loadOrigin(p, mapPanel, token);
