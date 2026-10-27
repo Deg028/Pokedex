@@ -905,3 +905,50 @@ html[data-theme="dark"] .music-player .music-btn--play {
     min-width: 0;
   }
 }
+
+/* ---------- Corrección: desplegable de generaciones sobre las cartas (móvil) ---------- */
+main .pokedex-search {
+  position: relative;
+  z-index: 40;
+}
+main .pokedex-search .dropdown-menu {
+  z-index: 1060;
+  background: #ffffff;
+  border: 3px solid #1c1c1c;
+  border-radius: 14px;
+  box-shadow: 0 8px 0 #1c1c1c;
+  max-height: 55vh;
+  overflow-y: auto;
+  opacity: 1;
+}
+html[data-theme="dark"] main .pokedex-search .dropdown-menu {
+  background: #1e2235;
+  border-color: #0b0c14;
+  box-shadow: 0 8px 0 #0b0c14;
+}
+
+@media (max-width: 480px) {
+  .music-player.music-player {
+    gap: 6px;
+    padding: 5px 8px 5px 6px;
+    box-sizing: border-box;
+  }
+  .music-player .music-note {
+    width: 28px;
+    height: 28px;
+  }
+  .music-eq {
+    display: none;
+  }
+  .music-player .music-controls {
+    gap: 4px;
+  }
+  .music-player .music-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .music-player .music-btn--play {
+    width: 38px;
+    height: 38px;
+  }
+}
