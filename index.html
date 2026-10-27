@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-search-style="classic" data-toggle-style="classic">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,6 +14,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/pokeball.css" />
   </head>
   <body>
     <div id="loading-screen">
@@ -24,6 +25,28 @@
     <div class="background-pokemon" aria-hidden="true"></div>
     <div class="background-pokemon-left" aria-hidden="true"></div>
  
+    <details class="style-picker">
+      <summary aria-label="Personalizar estilos">Estilos</summary>
+      <div class="style-picker__body">
+        <label>Buscador
+          <select data-style-kind="search">
+            <option value="classic">Pokédex clásica</option>
+            <option value="pill">Píldora Pokébola</option>
+            <option value="retro">Consola retro</option>
+            <option value="glass">Cristal moderno</option>
+          </select>
+        </label>
+        <label>Botón de tema
+          <select data-style-kind="toggle">
+            <option value="classic">Clásico</option>
+            <option value="switch">Interruptor sol/luna</option>
+            <option value="ball">Pokébola</option>
+            <option value="pixel">Pixel</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
     <button
       id="theme-toggle"
       class="btn theme-toggle d-flex align-items-center gap-2 position-absolute top-0 end-0 m-3"

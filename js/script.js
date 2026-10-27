@@ -213,42 +213,31 @@ function buildCard(p) {
     "";
 
   const card = document.createElement("div");
-  card.className = "card pokemon-card grid-card h-100 border-0 p-2 text-center";
+  card.className = "pb-card";
   card.tabIndex = 0;
   card.setAttribute("role", "button");
   card.setAttribute("aria-label", p.name);
 
-  const idSpan = document.createElement("span");
-  idSpan.className = "poke-id d-block";
-  idSpan.textContent = `#${String(p.id).padStart(3, "0")}`;
-  card.appendChild(idSpan);
+  const chips = (p.types || [])
+    .map((t) => {
+      const n = t.type.name;
+      return `<span class="pb-chip"><i style="background:${typeColors[n] || "#777"}"></i>${n}</span>`;
+    })
+    .join("");
 
-  const imgWrap = document.createElement("div");
-  imgWrap.className =
-    "image-container-sm mx-auto rounded-circle d-flex align-items-center justify-content-center mb-2";
-  const imgEl = document.createElement("img");
-  imgEl.className = "img-fluid";
-  imgEl.alt = p.name;
-  imgEl.src = img;
-  imgWrap.appendChild(imgEl);
-  card.appendChild(imgWrap);
-
-  const nameEl = document.createElement("h3");
-  nameEl.className = "poke-name text-capitalize mb-2";
-  nameEl.textContent = p.name;
-  card.appendChild(nameEl);
-
-  const typesDiv = document.createElement("div");
-  typesDiv.className = "d-flex flex-wrap justify-content-center gap-1";
-  (p.types || []).forEach((typeInfo) => {
-    const typeName = typeInfo.type.name;
-    const badge = document.createElement("span");
-    badge.className = "type-badge";
-    badge.textContent = typeName;
-    badge.style.backgroundColor = typeColors[typeName] || "#777";
-    typesDiv.appendChild(badge);
-  });
-  card.appendChild(typesDiv);
+  card.innerHTML = `
+    <div class="pb-top">
+      <span class="pb-acc pb-acc--l"></span><span class="pb-acc pb-acc--r"></span>
+      <span class="pb-num">#${String(p.id).padStart(3, "0")}</span>
+    </div>
+    <div class="pb-band"></div>
+    <div class="pb-bottom">
+      <h3 class="pb-name"></h3>
+      <div class="pb-chips">${chips}</div>
+    </div>
+    <div class="pb-ring"><img alt="" loading="lazy"></div>`;
+  card.querySelector(".pb-name").textContent = p.name;
+  card.querySelector(".pb-ring img").src = img;
 
   const openThisCard = () => {
     tryPlayCry(p, { force: true });
@@ -267,6 +256,73 @@ function buildCard(p) {
   return card;
 }
 
+// ---------- Origen: generación, región y mapa ----------
+// Cada región de los juegos se inspira en una zona real; el mapa muestra esa zona.
+const REGIONS = {
+  "generation-i": { gen: "I", name: "Kanto", inspired: "Región de Kantō, Japón", bbox: "138.5,34.7,141.0,37.0" },
+  "generation-ii": { gen: "II", name: "Johto", inspired: "Región de Kansai, Japón", bbox: "134.0,33.8,136.8,35.8" },
+  "generation-iii": { gen: "III", name: "Hoenn", inspired: "Isla de Kyūshū, Japón", bbox: "129.3,30.9,132.1,33.9" },
+  "generation-iv": { gen: "IV", name: "Sinnoh", inspired: "Isla de Hokkaidō, Japón", bbox: "139.8,41.3,145.8,45.6" },
+  "generation-v": { gen: "V", name: "Teselia (Unova)", inspired: "Nueva York, EE. UU.", bbox: "-74.3,40.5,-73.7,40.95" },
+  "generation-vi": { gen: "VI", name: "Kalos", inspired: "Francia", bbox: "-4.8,42.3,8.3,51.1" },
+  "generation-vii": { gen: "VII", name: "Alola", inspired: "Hawái, EE. UU.", bbox: "-158.3,21.2,-157.6,21.75" },
+  "generation-viii": { gen: "VIII", name: "Galar", inspired: "Reino Unido", bbox: "-6.0,50.0,1.8,55.5" },
+  "generation-ix": { gen: "IX", name: "Paldea", inspired: "Península Ibérica", bbox: "-9.5,36.0,3.3,43.8" },
+};
+const HABITATS = {
+  cave: "Cueva", forest: "Bosque", grassland: "Pradera", mountain: "Montaña",
+  rare: "Raro", "rough-terrain": "Terreno escarpado", sea: "Mar",
+  urban: "Urbano", "waters-edge": "Orilla del agua",
+};
+
+const prettyPlace = (slug) =>
+  slug
+    .replace(/-area$/, "")
+    .replace(/-(\d+f|b\d+f|1|2|3)$/, "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+
+async function loadOrigin(p, panel, token) {
+  const [species, encounters] = await Promise.all([
+    fetchJSON(`${API}/pokemon-species/${p.id}`).catch(() => null),
+    fetchJSON(`${API}/pokemon/${p.id}/encounters`).catch(() => []),
+  ]);
+  if (panel.dataset.token !== token) return; // se abrió otro Pokémon
+  const region = REGIONS[species?.generation?.name];
+
+  const places = [...new Set((encounters || []).map((e) => prettyPlace(e.location_area.name)))];
+  const towns = places.filter((n) => /(town|city|village)/i.test(n));
+  const routes = places.filter((n) => !/(town|city|village)/i.test(n));
+  const flavor = species?.flavor_text_entries?.find((f) => f.language.name === "es");
+  const habitat = species?.habitat ? HABITATS[species.habitat.name] || species.habitat.name : null;
+
+  const list = (title, arr) =>
+    arr.length
+      ? `<h4 class="pb-sub">${title}</h4><div class="pb-places">${arr.slice(0, 12).map((n) => `<span class="pb-place">${escapeHTML(n)}</span>`).join("")}</div>`
+      : "";
+
+  panel.innerHTML = `
+    <div class="pb-info">
+      <div class="pb-info__row"><span>Generación</span><b>${region ? "Gen " + region.gen : "—"}</b></div>
+      <div class="pb-info__row"><span>Región</span><b>${region ? region.name : "—"}</b></div>
+      ${habitat ? `<div class="pb-info__row"><span>Hábitat</span><b>${habitat}</b></div>` : ""}
+    </div>
+    ${flavor ? `<p class="pb-flavor">${escapeHTML(flavor.flavor_text.replace(/[\n\f]/g, " "))}</p>` : ""}
+    ${region ? `
+    <div class="pb-map">
+      <iframe title="Mapa de ${region.name}" loading="lazy"
+        src="https://www.openstreetmap.org/export/embed.html?bbox=${region.bbox}&layer=mapnik"></iframe>
+      <div class="pb-map__cap">${region.name} — mapa real de la zona que inspiró la región (${region.inspired})</div>
+    </div>` : ""}
+    ${list("Pueblos y ciudades donde aparece", towns)}
+    ${list("Rutas y zonas donde aparece", routes)}
+    ${places.length ? "" : '<p class="pb-flavor">Sin datos de zonas de encuentro para este Pokémon.</p>'}`;
+}
+
 // ---------- Detail modal ----------
 function openDetail(p) {
   if (!modal || !modalContent) return;
@@ -274,6 +330,8 @@ function openDetail(p) {
     p.sprites?.other?.["official-artwork"]?.front_default ||
     p.sprites?.front_default ||
     "";
+  const primaryType = (p.types || [])[0]?.type?.name || "normal";
+  const barColor = typeColors[primaryType] || "#ee1515";
   const stats = (p.stats || [])
     .map((s, i) => {
       const val = s.base_stat;
@@ -286,34 +344,64 @@ function openDetail(p) {
       </div>`;
     })
     .join("");
+  const chips = (p.types || [])
+    .map((t) => `<span class="pb-chip"><i style="background:${typeColors[t.type.name] || "#777"}"></i>${t.type.name}</span>`)
+    .join("");
+  const token = `${p.id}-${Date.now()}`;
+
   modalContent.innerHTML = `
-    <div class="detail__hero">
-      <img class="detail__img" src="${img}" alt="${p.name}"/>
-      <div>
-        <div class="detail__id">#${String(p.id).padStart(3, "0")}</div>
-        <h2 class="detail__name">${p.name}</h2>
-        <div class="types" style="justify-content:flex-start;">
-          ${(p.types || []).map((t) => `<span class="type type-${t.type.name}"><span class="type__icon">${TYPE_ICONS[t.type.name] || "\u25cf"}</span>${t.type.name}</span>`).join("")}
-        </div>
-        <div class="meta">
-          <span><b>Altura:</b> ${(p.height / 10).toFixed(1)} m</span>
-          <span><b>Peso:</b> ${(p.weight / 10).toFixed(1)} kg</span>
-          <span><b>Exp:</b> ${p.base_experience ?? "\u2014"}</span>
-        </div>
-        <div style="margin-top:10px;font-family:'VT323',monospace;font-size:18px;"><b>Habilidades:</b></div>
-        <div class="abilities">
-          ${(p.abilities || []).map((a) => `<span class="ability">${a.ability.name.replace("-", " ")}</span>`).join("")}
-        </div>
+    <div class="pb-detail">
+      <div class="pb-detail__top">
+        <span class="pb-acc pb-acc--l"></span><span class="pb-acc pb-acc--r"></span>
+        <span class="pb-detail__id">#${String(p.id).padStart(3, "0")}</span>
+        <h2 class="pb-detail__name"></h2>
       </div>
-    </div>
-    <div class="stats">${stats}</div>
-  `;
+      <div class="pb-band"></div>
+      <div class="pb-detail__ring"><img src="${img}" alt="${escapeHTML(p.name)}"></div>
+      <div class="pb-detail__body">
+        <div class="pb-chips pb-chips--lg">${chips}</div>
+        <div class="pb-tabs" role="tablist">
+          <button type="button" role="tab" class="active" data-tab="stats">Estadísticas</button>
+          <button type="button" role="tab" data-tab="map">Mapa y origen</button>
+        </div>
+        <section data-panel="stats">
+          <div class="meta">
+            <span><b>Altura:</b> ${(p.height / 10).toFixed(1)} m</span>
+            <span><b>Peso:</b> ${(p.weight / 10).toFixed(1)} kg</span>
+            <span><b>Exp:</b> ${p.base_experience ?? "—"}</span>
+          </div>
+          <div class="stats">${stats}</div>
+          <h4 class="pb-sub">Habilidades</h4>
+          <div class="abilities">
+            ${(p.abilities || []).map((a) => `<span class="ability">${a.ability.name.replace("-", " ")}</span>`).join("")}
+          </div>
+        </section>
+        <section data-panel="map" hidden data-token="${token}">
+          <p class="pb-flavor">Cargando origen…</p>
+        </section>
+      </div>
+    </div>`;
+  modalContent.querySelector(".pb-detail__name").textContent = p.name;
+  modal.querySelector(".modal__panel")?.classList.add("pb-modal");
+
+  // Pestañas (el origen se carga al abrir la pestaña por primera vez)
+  const mapPanel = modalContent.querySelector('[data-panel="map"]');
+  let originLoaded = false;
+  modalContent.querySelectorAll(".pb-tabs button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      modalContent.querySelectorAll(".pb-tabs button").forEach((b) => b.classList.toggle("active", b === btn));
+      modalContent.querySelectorAll("[data-panel]").forEach((s) => (s.hidden = s.dataset.panel !== btn.dataset.tab));
+      if (btn.dataset.tab === "map" && !originLoaded) {
+        originLoaded = true;
+        loadOrigin(p, mapPanel, token);
+      }
+    });
+  });
+
   modal.hidden = false;
   document.body.style.overflow = "hidden";
 
   // Animar barras con el color del tipo principal
-  const primaryType = (p.types || [])[0]?.type?.name || "normal";
-  const barColor = typeColors[primaryType] || "#ee1515";
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       modalContent.querySelectorAll(".stat__fill").forEach((bar) => {
@@ -422,6 +510,26 @@ if (themeToggleBtn) {
   });
 }
 setTheme(safeGetItem("pokedex-theme") || "light");
+
+// ---------- Estilos de buscador y botón de tema ----------
+const STYLE_PREFS = {
+  search: { key: "pokedex-search-style", attr: "data-search-style", def: "classic" },
+  toggle: { key: "pokedex-toggle-style", attr: "data-toggle-style", def: "classic" },
+};
+function applyStyle(kind, value) {
+  const cfg = STYLE_PREFS[kind];
+  document.documentElement.setAttribute(cfg.attr, value);
+  safeSetItem(cfg.key, value);
+}
+document.querySelectorAll("[data-style-kind]").forEach((sel) => {
+  const kind = sel.dataset.styleKind;
+  const saved = safeGetItem(STYLE_PREFS[kind].key);
+  const valid = [...sel.options].some((o) => o.value === saved);
+  const value = valid ? saved : STYLE_PREFS[kind].def;
+  sel.value = value;
+  applyStyle(kind, value);
+  sel.addEventListener("change", () => applyStyle(kind, sel.value));
+});
 
 // ---------- Init ----------
 runSearch();
