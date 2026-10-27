@@ -821,7 +821,7 @@ body {
 .background-pokemon-left {
   position: fixed;
   left: -100px;
-  top: 220px;
+  bottom: -100px;
   width: 500px;
   height: 500px;
   /* Corrección: Quitar la ruta de carpetas de tu PC y dejar solo desde "/sprites..." */
