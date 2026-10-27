@@ -1,0 +1,276 @@
+/* Tema de inicio: panel de cristal ligero en lugar de la carcasa roja pesada.
+   Se carga al final; solo afecta al buscador "classic" (las otras variantes
+   siguen definidas en pokeball.css) y al fondo de la página. */
+
+:root {
+  --home-ink: #1d2033;
+  --home-muted: #6b7088;
+  --home-line: #e4e7f1;
+  --home-field: #ffffff;
+  --home-accent: #e3350d;
+  --home-accent-2: #ff8a3d;
+  --home-panel: rgba(255, 255, 255, 0.72);
+  --home-ball: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23fff' stroke='%231d2033' stroke-width='4'/%3E%3Cpath d='M4 50a46 46 0 0 1 92 0z' fill='%23e3350d' stroke='%231d2033' stroke-width='4' stroke-linejoin='round'/%3E%3Crect x='4' y='47' width='92' height='6' fill='%231d2033'/%3E%3Ccircle cx='50' cy='50' r='13' fill='%23fff' stroke='%231d2033' stroke-width='5'/%3E%3C/svg%3E");
+}
+html[data-theme="dark"] {
+  --home-ink: #f3f4fb;
+  --home-muted: #a4a9c4;
+  --home-line: rgba(255, 255, 255, 0.1);
+  --home-field: #141629;
+  --home-accent: #ffc83d;
+  --home-accent-2: #ff9f1c;
+  --home-panel: rgba(22, 24, 44, 0.72);
+}
+
+/* ---- Fondo de página ---- */
+body {
+  background-color: #f6f7fb;
+  background-image:
+    radial-gradient(900px 480px at 12% -8%, rgba(255, 120, 100, 0.22), transparent 62%),
+    radial-gradient(800px 460px at 92% 0%, rgba(90, 170, 255, 0.2), transparent 60%),
+    radial-gradient(rgba(29, 32, 51, 0.07) 1px, transparent 1.4px);
+  background-size: auto, auto, 22px 22px;
+  background-attachment: fixed;
+}
+body.dark {
+  background-color: #0e1020;
+  background-image:
+    radial-gradient(900px 480px at 12% -8%, rgba(255, 190, 60, 0.12), transparent 62%),
+    radial-gradient(800px 460px at 92% 0%, rgba(110, 90, 255, 0.2), transparent 60%),
+    radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1.4px);
+  background-size: auto, auto, 22px 22px;
+}
+.background-pokemon,
+.background-pokemon-left {
+  opacity: 0.1;
+}
+
+/* ---- Carcasa -> panel de cristal ---- */
+html[data-search-style="classic"] main .pokedex-device {
+  background: var(--home-panel);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--home-line);
+  border-radius: 28px;
+  padding: 1.1rem 1.25rem 1.35rem;
+  box-shadow:
+    0 24px 50px -28px rgba(29, 32, 81, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+/* El brillo pasa a ser una Pokébola de marca de agua */
+html[data-search-style="classic"] main .pokedex-device::before {
+  inset: 0;
+  height: auto;
+  border-radius: inherit;
+  background: var(--home-ball) right -56px top -64px / 210px 210px no-repeat;
+  opacity: 0.1;
+}
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-device {
+  box-shadow:
+    0 24px 50px -28px rgba(0, 0, 0, 0.7),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+}
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-device::before {
+  opacity: 0.14;
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Lente y luces: discretas */
+html[data-search-style="classic"] main .pokedex-top {
+  padding: 0 2px 6px;
+  gap: 8px;
+}
+html[data-search-style="classic"] main .pokedex-lens {
+  width: 26px;
+  height: 26px;
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(29, 32, 51, 0.25), 0 3px 8px -2px rgba(13, 91, 189, 0.55);
+}
+html[data-search-style="classic"] main .pokedex-lens::after {
+  top: 4px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+}
+html[data-search-style="classic"] main .pokedex-lights {
+  gap: 5px;
+}
+html[data-search-style="classic"] main .pokedex-lights .light {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  box-shadow: 0 0 6px currentColor;
+}
+html[data-search-style="classic"] main .light-red {
+  color: #ff4d4d;
+}
+html[data-search-style="classic"] main .light-yellow {
+  color: #ffde59;
+}
+html[data-search-style="classic"] main .light-green {
+  color: #4dd45f;
+}
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-lens {
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 3px 10px -2px rgba(58, 160, 255, 0.6);
+}
+
+/* Pantalla sin marco */
+html[data-search-style="classic"] main .pokedex-screen,
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-screen,
+body.dark html[data-search-style="classic"] main .pokedex-screen {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0.25rem 0 0;
+  color: var(--home-ink);
+}
+
+/* ---- Título ---- */
+html[data-search-style="classic"] main .pokedex-title {
+  font-family: "Press Start 2P", cursive;
+  font-size: clamp(24px, 4vw, 38px);
+  line-height: 1.2;
+  letter-spacing: 3px;
+  margin: 0.2rem 0 0.5rem !important;
+  color: var(--home-accent);
+  background: linear-gradient(100deg, var(--home-accent) 10%, var(--home-accent-2) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+.pokedex-sub {
+  margin: 0 auto 1.25rem;
+  max-width: 460px;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--home-muted);
+}
+
+/* ---- Campos ---- */
+html[data-search-style="classic"] main .pokedex-search {
+  --home-radius: 14px;
+}
+html[data-search-style="classic"] main .pokedex-search .input-group {
+  background: var(--home-field);
+  border: 1px solid var(--home-line);
+  border-radius: var(--home-radius);
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+html[data-search-style="classic"] main .pokedex-search .input-group:focus-within {
+  border-color: var(--home-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--home-accent) 18%, transparent);
+}
+html[data-search-style="classic"] main .pokedex-search .input-group-text,
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-search .input-group-text {
+  background: transparent;
+  border: 0;
+  color: var(--home-muted);
+  font-size: 16px;
+  padding-left: 1rem;
+}
+html[data-search-style="classic"] main .pokedex-search .form-control,
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-search .form-control {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--home-ink);
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 14px;
+}
+html[data-search-style="classic"] main .pokedex-search .form-control::placeholder {
+  color: var(--home-muted);
+  opacity: 0.85;
+}
+html[data-search-style="classic"] main .pokedex-search #generation-filter,
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-search #generation-filter {
+  background: var(--home-field);
+  border: 1px solid var(--home-line);
+  border-radius: var(--home-radius);
+  color: var(--home-ink);
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+html[data-search-style="classic"] main .pokedex-search #generation-filter:hover,
+html[data-search-style="classic"] main .pokedex-search #generation-filter.show {
+  border-color: var(--home-accent);
+}
+html[data-search-style="classic"] main .pokedex-search #search-btn,
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-search #search-btn {
+  background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2));
+  border: 0;
+  border-radius: var(--home-radius);
+  color: #fff;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: 0 10px 20px -10px color-mix(in srgb, var(--home-accent) 90%, transparent);
+  transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+}
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-search #search-btn {
+  color: #1a1a1a;
+}
+html[data-search-style="classic"] main .pokedex-search #search-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 14px 24px -10px color-mix(in srgb, var(--home-accent) 90%, transparent);
+}
+html[data-search-style="classic"] main .pokedex-search #search-btn:active {
+  transform: translateY(1px);
+}
+
+/* Desplegable de generaciones */
+html[data-search-style="classic"] main .pokedex-search .dropdown-menu,
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-search .dropdown-menu {
+  border: 1px solid var(--home-line);
+  border-radius: 16px;
+  padding: 6px;
+  box-shadow: 0 18px 40px -16px rgba(20, 24, 70, 0.4);
+}
+html[data-search-style="classic"] main .pokedex-search .gen-option {
+  border-radius: 10px;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 13px;
+}
+html[data-search-style="classic"] main .pokedex-search .gen-option.active {
+  background: linear-gradient(135deg, var(--home-accent), var(--home-accent-2)) !important;
+  color: #fff !important;
+}
+html[data-theme="dark"][data-search-style="classic"] main .pokedex-search .gen-option.active {
+  color: #1a1a1a !important;
+}
+
+html[data-search-style="classic"] main #error-message {
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 12px;
+}
+
+@media (max-width: 780px) {
+  html[data-search-style="classic"] main .pokedex-device {
+    border-radius: 22px;
+    padding: 0.9rem 0.9rem 1.1rem;
+  }
+  html[data-search-style="classic"] main .pokedex-title {
+    letter-spacing: 2px;
+  }
+}
+
+/* Aire entre el reproductor fijo y el panel */
+@media (min-width: 992px) {
+  main.container-fluid {
+    padding-top: 6.25rem !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .pokedex-sub {
+    padding: 0 34px;
+    font-size: 12px;
+  }
+}
