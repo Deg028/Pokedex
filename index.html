@@ -242,8 +242,11 @@
  
     <!-- Music Player -->
     <div class="music-player" id="musicPlayer">
-      <span class="music-note" id="musicNote">♪</span>
-      <span class="music-track" id="musicTrackName">— Pokédex Soundtrack —</span>
+      <span class="music-note" id="musicNote" aria-hidden="true">♪</span>
+      <div class="music-screen">
+        <span class="music-track" id="musicTrackName">— Pokédex Soundtrack —</span>
+        <span class="music-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      </div>
       <div class="music-controls">
         <button class="music-btn" id="musicPrev" aria-label="Anterior">⏮</button>
         <button class="music-btn music-btn--play" id="musicToggle" aria-label="Reproducir">▶</button>

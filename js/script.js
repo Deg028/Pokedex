@@ -256,18 +256,25 @@ function buildCard(p) {
   return card;
 }
 
-// ---------- Origen: generación, región y mapa ----------
-// Cada región de los juegos se inspira en una zona real; el mapa muestra esa zona.
-const REGIONS = {
-  "generation-i": { gen: "I", name: "Kanto", inspired: "Región de Kantō, Japón", bbox: "138.5,34.7,141.0,37.0" },
-  "generation-ii": { gen: "II", name: "Johto", inspired: "Región de Kansai, Japón", bbox: "134.0,33.8,136.8,35.8" },
-  "generation-iii": { gen: "III", name: "Hoenn", inspired: "Isla de Kyūshū, Japón", bbox: "129.3,30.9,132.1,33.9" },
-  "generation-iv": { gen: "IV", name: "Sinnoh", inspired: "Isla de Hokkaidō, Japón", bbox: "139.8,41.3,145.8,45.6" },
-  "generation-v": { gen: "V", name: "Teselia (Unova)", inspired: "Nueva York, EE. UU.", bbox: "-74.3,40.5,-73.7,40.95" },
-  "generation-vi": { gen: "VI", name: "Kalos", inspired: "Francia", bbox: "-4.8,42.3,8.3,51.1" },
-  "generation-vii": { gen: "VII", name: "Alola", inspired: "Hawái, EE. UU.", bbox: "-158.3,21.2,-157.6,21.75" },
-  "generation-viii": { gen: "VIII", name: "Galar", inspired: "Reino Unido", bbox: "-6.0,50.0,1.8,55.5" },
-  "generation-ix": { gen: "IX", name: "Paldea", inspired: "Península Ibérica", bbox: "-9.5,36.0,3.3,43.8" },
+// ---------- Origen: generación, región y mapa del juego ----------
+// Mapas de los juegos (sprites/maps). Las regiones sin imagen usan un mapa real
+// de la zona que las inspiró.
+const REGION_INFO = {
+  kanto: { name: "Kanto", gen: "I", game: "HeartGold / SoulSilver", img: "sprites/maps/kanto.jpg" },
+  johto: { name: "Johto", gen: "II", game: "Oro / Plata / Cristal", img: "sprites/maps/johto.png", pixel: true },
+  hoenn: { name: "Hoenn", gen: "III", game: "Omega Rubí / Zafiro Alfa", img: "sprites/maps/hoenn.png" },
+  sinnoh: { name: "Sinnoh", gen: "IV", game: "Diamante / Perla", img: "sprites/maps/sinnoh.jpg" },
+  unova: { name: "Teselia (Unova)", gen: "V", inspired: "Nueva York, EE. UU.", bbox: "-74.3,40.5,-73.7,40.95" },
+  kalos: { name: "Kalos", gen: "VI", game: "X / Y", img: "sprites/maps/kalos.png" },
+  alola: { name: "Alola", gen: "VII", game: "Ultrasol / Ultraluna", img: "sprites/maps/alola.png" },
+  galar: { name: "Galar", gen: "VIII", inspired: "Reino Unido", bbox: "-6.0,50.0,1.8,55.5" },
+  paldea: { name: "Paldea", gen: "IX", inspired: "Península Ibérica", bbox: "-9.5,36.0,3.3,43.8" },
+  hisui: { name: "Hisui", gen: "—", inspired: "Hokkaidō, Japón", bbox: "139.8,41.3,145.8,45.6" },
+};
+const GEN_REGION = {
+  "generation-i": "kanto", "generation-ii": "johto", "generation-iii": "hoenn",
+  "generation-iv": "sinnoh", "generation-v": "unova", "generation-vi": "kalos",
+  "generation-vii": "alola", "generation-viii": "galar", "generation-ix": "paldea",
 };
 const HABITATS = {
   cave: "Cueva", forest: "Bosque", grassland: "Pradera", mountain: "Montaña",
@@ -286,41 +293,85 @@ function escapeHTML(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
 
+// Región de cada zona de encuentro, consultada a PokeAPI (location-area → location → region)
+async function resolveAreaRegion(area) {
+  try {
+    const a = await fetchJSON(area.location_area.url);
+    const l = await fetchJSON(a.location.url);
+    return { name: prettyPlace(area.location_area.name), region: l.region?.name || null };
+  } catch {
+    return { name: prettyPlace(area.location_area.name), region: null };
+  }
+}
+
 async function loadOrigin(p, panel, token) {
   const [species, encounters] = await Promise.all([
     fetchJSON(`${API}/pokemon-species/${p.id}`).catch(() => null),
     fetchJSON(`${API}/pokemon/${p.id}/encounters`).catch(() => []),
   ]);
   if (panel.dataset.token !== token) return; // se abrió otro Pokémon
-  const region = REGIONS[species?.generation?.name];
 
-  const places = [...new Set((encounters || []).map((e) => prettyPlace(e.location_area.name)))];
-  const towns = places.filter((n) => /(town|city|village)/i.test(n));
-  const routes = places.filter((n) => !/(town|city|village)/i.test(n));
+  const home = GEN_REGION[species?.generation?.name] || null;
+  const uniqueAreas = [];
+  const seen = new Set();
+  (encounters || []).forEach((e) => {
+    const n = prettyPlace(e.location_area.name);
+    if (!seen.has(n)) { seen.add(n); uniqueAreas.push(e); }
+  });
+  const resolved = await Promise.all(uniqueAreas.slice(0, 16).map(resolveAreaRegion));
+  if (panel.dataset.token !== token) return;
+
+  // Zonas agrupadas por región
+  const byRegion = {};
+  resolved.forEach((r) => {
+    if (!r.region) return;
+    (byRegion[r.region] ||= []).push(r.name);
+  });
+  const regionList = [...new Set([home, ...Object.keys(byRegion)].filter((r) => r && REGION_INFO[r]))];
   const flavor = species?.flavor_text_entries?.find((f) => f.language.name === "es");
   const habitat = species?.habitat ? HABITATS[species.habitat.name] || species.habitat.name : null;
+  const homeInfo = home ? REGION_INFO[home] : null;
 
-  const list = (title, arr) =>
+  const placeChips = (title, arr) =>
     arr.length
-      ? `<h4 class="pb-sub">${title}</h4><div class="pb-places">${arr.slice(0, 12).map((n) => `<span class="pb-place">${escapeHTML(n)}</span>`).join("")}</div>`
+      ? `<h4 class="pb-sub">${title}</h4><div class="pb-places">${arr.map((n) => `<span class="pb-place">${escapeHTML(n)}</span>`).join("")}</div>`
       : "";
+
+  const renderRegion = (slug) => {
+    const info = REGION_INFO[slug];
+    const names = [...new Set(byRegion[slug] || [])];
+    const towns = names.filter((n) => /(town|city|village)/i.test(n));
+    const routes = names.filter((n) => !/(town|city|village)/i.test(n));
+    const map = info.img
+      ? `<img class="pb-map__img${info.pixel ? " pb-map__img--pixel" : ""}" src="${info.img}" alt="Mapa de ${info.name}">
+         <div class="pb-map__cap">Mapa del juego — ${info.name} (Pokémon ${info.game})</div>`
+      : `<iframe title="Mapa de ${info.name}" loading="lazy"
+           src="https://www.openstreetmap.org/export/embed.html?bbox=${info.bbox}&layer=mapnik"></iframe>
+         <div class="pb-map__cap">${info.name} — sin mapa de juego disponible; mapa real de la zona que inspiró la región (${info.inspired})</div>`;
+    return `
+      <div class="pb-map">${map}</div>
+      ${placeChips("Pueblos y ciudades donde aparece", towns)}
+      ${placeChips("Rutas y zonas donde aparece", routes)}
+      ${names.length ? "" : '<p class="pb-flavor">Sin zonas de encuentro registradas en esta región.</p>'}`;
+  };
 
   panel.innerHTML = `
     <div class="pb-info">
-      <div class="pb-info__row"><span>Generación</span><b>${region ? "Gen " + region.gen : "—"}</b></div>
-      <div class="pb-info__row"><span>Región</span><b>${region ? region.name : "—"}</b></div>
+      <div class="pb-info__row"><span>Generación</span><b>${homeInfo ? "Gen " + homeInfo.gen : "—"}</b></div>
+      <div class="pb-info__row"><span>Región de origen</span><b>${homeInfo ? homeInfo.name : "—"}</b></div>
       ${habitat ? `<div class="pb-info__row"><span>Hábitat</span><b>${habitat}</b></div>` : ""}
     </div>
     ${flavor ? `<p class="pb-flavor">${escapeHTML(flavor.flavor_text.replace(/[\n\f]/g, " "))}</p>` : ""}
-    ${region ? `
-    <div class="pb-map">
-      <iframe title="Mapa de ${region.name}" loading="lazy"
-        src="https://www.openstreetmap.org/export/embed.html?bbox=${region.bbox}&layer=mapnik"></iframe>
-      <div class="pb-map__cap">${region.name} — mapa real de la zona que inspiró la región (${region.inspired})</div>
-    </div>` : ""}
-    ${list("Pueblos y ciudades donde aparece", towns)}
-    ${list("Rutas y zonas donde aparece", routes)}
-    ${places.length ? "" : '<p class="pb-flavor">Sin datos de zonas de encuentro para este Pokémon.</p>'}`;
+    ${regionList.length > 1 ? `<div class="pb-regions" role="tablist">${regionList.map((r, i) => `<button type="button" class="${i ? "" : "active"}" data-region="${r}">${REGION_INFO[r].name}</button>`).join("")}</div>` : ""}
+    <div class="pb-region-view">${regionList.length ? renderRegion(regionList[0]) : '<p class="pb-flavor">Sin datos de región para este Pokémon.</p>'}</div>`;
+
+  const view = panel.querySelector(".pb-region-view");
+  panel.querySelectorAll(".pb-regions button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      panel.querySelectorAll(".pb-regions button").forEach((b) => b.classList.toggle("active", b === btn));
+      view.innerHTML = renderRegion(btn.dataset.region);
+    });
+  });
 }
 
 // ---------- Detail modal ----------

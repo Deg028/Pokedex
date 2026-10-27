@@ -725,3 +725,183 @@ html[data-theme="dark"][data-toggle-style="pixel"] .theme-toggle {
   border-color: #f5c518;
   box-shadow: 4px 4px 0 #0b0c14;
 }
+
+/* ---------- Mapas del juego ---------- */
+.pb-regions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.pb-regions button {
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 3px solid var(--pb-edge);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pb-ink);
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  cursor: pointer;
+}
+.pb-regions button.active {
+  background: var(--pb-top);
+  color: #fff;
+}
+.pb-map__img {
+  display: block;
+  width: 100%;
+  max-height: 340px;
+  object-fit: contain;
+  background: #0b0c14;
+}
+.pb-map__img--pixel {
+  image-rendering: pixelated;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+/* ---------- Reproductor de música (consola Pokébola) ---------- */
+.music-player.music-player {
+  gap: 10px;
+  min-width: 340px;
+  padding: 6px 10px 6px 8px;
+  background: #cf2d0a;
+  border: 4px solid #1c1c1c;
+  border-radius: 18px;
+  box-shadow: 0 5px 0 #1c1c1c;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  font-family: "Press Start 2P", monospace;
+}
+html[data-theme="dark"] .music-player.music-player {
+  background: #262b38;
+  border-color: #f5c518;
+  box-shadow: 0 5px 0 #0b0c14;
+}
+.music-player .music-note {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  font-size: 0;
+  border: 3px solid #1c1c1c;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff 0 44%, #1c1c1c 44% 56%, #f7f3e8 56%);
+  box-sizing: border-box;
+}
+.music-player .music-note::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border: 2px solid #1c1c1c;
+  border-radius: 50%;
+  background: #fff;
+}
+.music-player .music-note.playing {
+  animation: pb-spin 1.6s linear infinite;
+}
+@keyframes pb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.music-screen {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 3px solid #1c1c1c;
+  border-radius: 8px;
+  background: #9bbc0f;
+  color: #0f380f;
+}
+html[data-theme="dark"] .music-screen {
+  background: #0f380f;
+  color: #9bbc0f;
+  border-color: #0b0c14;
+}
+.music-player .music-track {
+  flex: 1;
+  min-width: 0;
+  font-family: "VT323", monospace;
+  font-size: 18px;
+  letter-spacing: 0;
+  line-height: 1;
+  opacity: 1;
+}
+.music-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+  flex: none;
+}
+.music-eq i {
+  display: block;
+  width: 3px;
+  height: 3px;
+  background: currentColor;
+}
+.music-note.playing ~ .music-screen .music-eq i {
+  animation: pb-eq 0.6s ease-in-out infinite alternate;
+}
+.music-eq i:nth-child(2) { animation-delay: 0.15s; }
+.music-eq i:nth-child(3) { animation-delay: 0.3s; }
+.music-eq i:nth-child(4) { animation-delay: 0.45s; }
+@keyframes pb-eq {
+  from { height: 3px; }
+  to { height: 14px; }
+}
+.music-player .music-controls {
+  gap: 6px;
+}
+.music-player .music-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #1c1c1c;
+  border-radius: 50%;
+  background: #f7f3e8;
+  color: #1c1c1c;
+  font-size: 13px;
+  box-shadow: 0 3px 0 #1c1c1c;
+}
+.music-player .music-btn:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+.music-player .music-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1c1c1c;
+}
+.music-player .music-btn--play {
+  width: 42px;
+  height: 42px;
+  background: #f5c518;
+  font-size: 16px;
+}
+html[data-theme="dark"] .music-player .music-btn {
+  background: #1e2235;
+  color: #f3f4f6;
+  border-color: #0b0c14;
+  box-shadow: 0 3px 0 #0b0c14;
+}
+html[data-theme="dark"] .music-player .music-btn--play {
+  background: #f5c518;
+  color: #1c1c1c;
+}
+@media (max-width: 780px) {
+  .music-player.music-player {
+    min-width: 0;
+  }
+}
